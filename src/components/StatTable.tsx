@@ -1,4 +1,28 @@
-const tds = "border px-4 py-2 text-white"
+import logo from '../assets/images/logo.png'
+
+const tds = "px-3 py-2 border border-white-700"
+{/* Addable Players*/}
+const players = ["1", "2", "3", "4"];
+{/* Addable Results*/}
+const statTypes = [
+  
+  "serveAce",
+  "serveError",
+  "attackPoint",
+  "attackError",
+  "receptionError",
+  "blockPoint",
+];
+
+{/* Change names in inputs*/}
+const statLabels: Record<string, string> = {
+  serveAce: "Serve Ace",
+  serveError: "Serve Error",
+  attackPoint: "Attack Point",
+  attackError: "Attack Error",
+  receptionError: "Reception Error",
+  blockPoint: "Block Point",
+};
 
 type Props = {
   stats: { [key: string]: number}
@@ -6,57 +30,36 @@ type Props = {
 
 const StatTable = ({stats}: Props) => {
   return (
-    <div className="result">
-      <table className="resultStat table-auto">
+    <div className="result flex-1 bg-gray-900 p-4 rounded-2xl shadow-lg overflow-x-auto">
+      <table className="w-full text-sm text-left">
         <thead>
-          <tr>
-              <th className={tds}></th>
-              <th className={tds}>Serve Ace</th>
-              <th className={tds}>Serve Error</th>
-              <th className={tds}>Attack Point</th>
-              <th className={tds}>Attack Error</th>
-              <th className={tds}>Reception Error</th>
-              <th className={tds}>Block Point</th>
+          <tr >
+            {/* Creates heading for inputs */}
+            <th className='border text-white'><img className="h-18 mx-auto object-fill" src={logo}/></th>
+              {statTypes.map((stat) => (
+              <th
+                key={stat}
+                className={tds}
+                >
+              {statLabels[stat]}
+          </th>
+
+        ))}
           </tr>
          </thead>
-        <tbody>
-          <tr>
-              <td className={tds} id ="StatName1">Player 1</td>
-              <td className={tds} id="serveAce1">{stats["serveAce1"] || 0}</td>
-              <td className={tds} id="serveError1">{stats["serveError1"] || 0}</td>
-              <td className={tds} id="attackPoint1">{stats["attackPoint1"] || 0}</td>
-              <td className={tds} id="attackError1">{stats["attackError1"] || 0}</td>
-              <td className={tds} id="receptionError1">{stats["receptionError1"] || 0}</td>
-              <td className={tds} id="blockPoint1">{stats["blockPoint1"] || 0}</td>
-          </tr>
-          <tr>
-              <td className={tds} id ="StatName2">Player 2</td>
-              <td className={tds} id="serveAce2">{stats["serveAce2"] || 0}</td>
-              <td className={tds} id="serveError2">{stats["serveError2"] || 0}</td>
-              <td className={tds} id="attackPoint2">{stats["attackPoint2"] || 0}</td>
-              <td className={tds} id="attackError2">{stats["attackError2"] || 0}</td>
-              <td className={tds} id="receptionError2">{stats["receptionError2"] || 0}</td>
-              <td className={tds} id="blockPoint2">{stats["blockPoint2"] || 0}</td>
-          </tr>
-          <tr>
-              <td className={tds} id ="StatName3">Player 3</td>
-              <td className={tds} id="serveAce3">{stats["serveAce3"] || 0}</td>
-              <td className={tds} id="serveError3">{stats["serveError3"] || 0}</td>
-              <td className={tds} id="attackPoint3">{stats["attackPoint3"] || 0}</td>
-              <td className={tds} id="attackError3">{stats["attackError3"] || 0}</td>
-              <td className={tds} id="receptionError3">{stats["receptionError3"] || 0}</td>
-              <td className={tds} id="blockPoint3">{stats["blockPoint3"] || 0}</td>
-          </tr>
-          <tr>
-              <td className={tds} id ="StatName4">Player 4</td>
-              <td className={tds} id="serveAce4">{stats["serveAce4"] || 0}</td>
-              <td className={tds} id="serveError4">{stats["serveError4"] || 0}</td>
-              <td className={tds} id="attackPoint4">{stats["attackPoint4"] || 0}</td>
-              <td className={tds} id="attackError4">{stats["attackError4"] || 0}</td>
-              <td className={tds} id="receptionError4">{stats["receptionError4"] || 0}</td>
-              <td className={tds} id="blockPoint4">{stats["blockPoint4"] || 0}</td>
-          </tr>
-        </tbody>
+          <tbody>
+            {players.map((player) => (
+              <tr key={player}>
+                <td className={tds}>Player {player}</td>
+
+                {statTypes.map((stat) => (
+                  <td key={stat} className={tds}>
+                    {stats[stat + player] || 0}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
       </table>
   </div>
   )

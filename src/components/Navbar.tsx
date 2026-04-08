@@ -8,7 +8,7 @@ const Navbar = () => {
             <div className="pt-2">
                 <img src={logo} alt="" className=' h-10 w-18 '/>
             </div>
-            <div className="hidden md:flex space-x-6">
+            <div className=" md:flex space-x-6">
                 <Link to='/' className='hover:text-white text-gray-400 border-amber-400'>RallyIQ</Link>
                 <Link to='/newmatch' className='hover:text-white text-gray-400'>New Match</Link>
             </div>
