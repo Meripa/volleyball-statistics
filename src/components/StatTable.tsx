@@ -5,17 +5,21 @@ const tds = "px-3 py-2 border border-white-700"
 const players = ["1", "2", "3", "4"];
 {/* Addable Results*/}
 const statTypes = [
-  
+
+  "totalPoints",
+  "plussesMinuses",
   "serveAce",
   "serveError",
+  "receptionError",
   "attackPoint",
   "attackError",
-  "receptionError",
   "blockPoint",
 ];
 
 {/* Change names in inputs*/}
 const statLabels: Record<string, string> = {
+  totalPoints: "Total Points",
+  plussesMinuses: "+/-",
   serveAce: "Serve Ace",
   serveError: "Serve Error",
   attackPoint: "Attack Point",

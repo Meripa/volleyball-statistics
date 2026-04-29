@@ -8,7 +8,7 @@ const statLabels: Record<string, string> = {
 };
 
 type LogEvent = {
-    player: string;
+    player: number;
     type: string;
 }
 
