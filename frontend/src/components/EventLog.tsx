@@ -15,10 +15,11 @@ type LogEvent = {
 type Props = {
     log: LogEvent[];
     undo: () => void;
+    playerNames: Record<string, string>;
 };
 
 
-const EventLog = ({log, undo}: Props) => {
+const EventLog = ({log, undo, playerNames}: Props) => {
   return (
     <div className=" bg-gray-900 p-4 rounded-xl" >
     <h2 className="text-xl mb-3 text-white">Event Log</h2>
@@ -36,7 +37,7 @@ const EventLog = ({log, undo}: Props) => {
             key={index}
             className="text-white py-1 border-b border-gray-700"
         >
-            {log.length - index}. Player {event.player} - {statLabels[event.type]}
+            {log.length - index}. {playerNames[String(event.player)] || `Player ${event.player}`} - {statLabels[event.type]}
         </div>
         ))}
     </div>

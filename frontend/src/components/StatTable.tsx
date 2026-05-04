@@ -30,9 +30,10 @@ const statLabels: Record<string, string> = {
 
 type Props = {
   stats: { [key: string]: number}
+  playerNames: Record<string, string>
 }
 
-const StatTable = ({stats}: Props) => {
+const StatTable = ({stats, playerNames}: Props) => {
   return (
     <div className="result flex-1 bg-gray-900 p-4 rounded-2xl shadow-lg overflow-x-auto">
       <table className="w-full text-sm text-left">
@@ -54,7 +55,7 @@ const StatTable = ({stats}: Props) => {
           <tbody>
             {players.map((player) => (
               <tr key={player}>
-                <td className={tds}>Player {player}</td>
+                <td className={tds}>{playerNames[player] || `Player ${player}`}</td>
 
                 {statTypes.map((stat) => (
                   <td key={stat} className={tds}>

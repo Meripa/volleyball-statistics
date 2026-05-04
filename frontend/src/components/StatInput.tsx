@@ -1,5 +1,6 @@
 type Props = {
   handleClick: (player: number, stat: string) => void
+  playerNames: Record<string, string>
 }
 
 const players = [1, 2, 3, 4]
@@ -27,12 +28,12 @@ const btn =
 
 const plyr = 'text-lg font-semibold mb-2 text-gray-300'
 
-const StatInput = ({ handleClick }: Props) => {
+const StatInput = ({ handleClick, playerNames }: Props) => {
   return (
     <div className="statistics flex-1 bg-gray-900 p-4 rounded-2xl shadow-lg">
       {players.map((player) => (
         <div key={player} className="stats-group mb-4">
-          <h2 className={plyr}>Player {player}</h2>
+          <h2 className={plyr}>{playerNames[String(player)] || `Player ${player}`}</h2>
 
           {statTypes.map((stat) => (
             <button

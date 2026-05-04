@@ -25,6 +25,11 @@ const mapGame = (row) => ({
     typeof row.log === "string"
       ? JSON.parse(row.log)
       : (row.log || []),
+
+  playerNames:
+    typeof row.playernames === "string"
+      ? JSON.parse(row.playernames)
+      : (row.playernames || {}),
 })
 
 const initDb = async () => {
@@ -37,8 +42,14 @@ const initDb = async () => {
       scorea INTEGER NOT NULL DEFAULT 0,
       scoreb INTEGER NOT NULL DEFAULT 0,
       stats JSONB NOT NULL DEFAULT '{}'::jsonb,
-      log JSONB NOT NULL DEFAULT '[]'::jsonb
+      log JSONB NOT NULL DEFAULT '[]'::jsonb,
+      playernames JSONB NOT NULL DEFAULT '{}'::jsonb
     )
+  `)
+
+  await pool.query(`
+    ALTER TABLE games
+    ADD COLUMN IF NOT EXISTS playernames JSONB NOT NULL DEFAULT '{}'::jsonb
   `)
 }
 
@@ -169,17 +180,25 @@ app.post("/games/:id/events", async (req, res) => {
 app.patch("/games/:id", async (req, res) => {
     const gameId = Number(req.params.id)
 
-    const { scoreA, scoreB, stats, log} = req.body
+    const { scoreA, scoreB, stats, log, playerNames } = req.body
 
     const result = await pool.query(
     `UPDATE games
      SET scorea = $1,
          scoreb = $2,
          stats = $3,
-         log = $4
-     WHERE id = $5
+         log = $4,
+         playernames = $5
+     WHERE id = $6
      RETURNING *`,
-     [scoreA, scoreB, JSON.stringify(stats), JSON.stringify(log), gameId]
+     [
+      scoreA,
+      scoreB,
+      JSON.stringify(stats),
+      JSON.stringify(log),
+      JSON.stringify(playerNames || {}),
+      gameId,
+    ]
     )
 
     if (result.rows.length === 0) {
