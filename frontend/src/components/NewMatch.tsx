@@ -6,6 +6,7 @@ import EventLog from './EventLog'
 import MatchHeader from './MatchHeader'
 
 
+
 type Stats = {
   [key: string]: number
   scoreA: number
@@ -67,13 +68,15 @@ const NewMatch = () => {
             newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) + 1
           } 
         } else {
-          if (isError)
+          if (isError){
             newStats.scoreA = prev.scoreA + 1
-          
-          else {
+            newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) - 1
+
+          } else {
             newStats.scoreB = prev.scoreB + 1
             // Total point per person
             newStats[totalPointsKey] = (prev[totalPointsKey] || 0) + 1
+            newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) + 1
           }
         } 
 
@@ -82,6 +85,7 @@ const NewMatch = () => {
 
       setLog((prev) => [...prev, { player, type }])
     }
+
 
 const handleSaveMatch = async () => {
   if (!id) return
@@ -101,6 +105,8 @@ const handleSaveMatch = async () => {
 
   const updatedGame = await res.json()
   setGame(updatedGame)
+
+  alert("")
 }
 
 const handleUndo = () => {
@@ -161,21 +167,22 @@ useEffect(() => {
   if (!id) return
 
   fetch(`http://localhost:5000/games/${id}`)
-    .then((res) => res.json())
-    .then((data) => {
+    .then(res => res.json())
+    .then(data => {
       setGame(data)
-
-      setStats((prev) => ({
-        ...prev,
+      setStats({
         scoreA: data.scoreA,
         scoreB: data.scoreB,
-      }))
+        ...(data.stats || {})
+      })
+
+      setLog(data.log || [])
+
     })
-    .catch((err) => console.log(err))
 }, [id])
 
 return (
-  <div className="min-h-screen  from-slate-950 via-slate-900 to-slate-950 text-white py-10 px-6">
+  <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white py-10 px-6">
     <div className="max-w-7xl mx-auto space-y-6">
       <MatchHeader
         setNumber={1}

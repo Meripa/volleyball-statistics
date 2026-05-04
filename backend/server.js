@@ -14,8 +14,16 @@ const mapGame = (row) => ({
   date: row.date,
   scoreA: row.scorea,
   scoreB: row.scoreb,
-  stats: row.stats,
-  log: row.log,
+
+  stats:
+    typeof row.stats === "string"
+      ? JSON.parse(row.stats)
+      : (row.stats || {}),
+
+  log:
+    typeof row.log === "string"
+      ? JSON.parse(row.log)
+      : (row.log || []),
 })
 
 let games = []
@@ -74,51 +82,75 @@ app.delete("/games/:id", async (req, res) =>{
 
 
 // Events
-app.post("/games/:id/events", (req, res) =>{
+app.post("/games/:id/events", async (req, res) => {
   const gameId = Number(req.params.id)
   const { player, type } = req.body
 
-  const game = games.find((game) => game.id === gameId)
+  const result = await pool.query(
+    "SELECT * FROM games WHERE id = $1",
+    [gameId]
+  )
 
-  if (!game) {
+  if (result.rows.length === 0) {
     return res.status(404).json({ message: "Game not found" })
   }
+
+  const game = result.rows[0]
+
+  let stats = game.stats || {}
+  let log = game.log || []
+  let scoreA = game.scorea
+  let scoreB = game.scoreb
 
   const key = type + player
   const totalPointsKey = "totalPoints" + player
   const plussesMinusesKey = "plussesMinuses" + player
 
-  if (!game.stats) game.stats = {}
-  if (!game.log) game.log = []
-
-  game.stats[key] = (game.stats[key] || 0) + 1
+  stats[key] = (stats[key] || 0) + 1
 
   const isTeamAPlayer = player <= 2
   const isError = type.includes("Error")
 
   if (isTeamAPlayer) {
     if (isError) {
-      game.scoreB += 1
-      game.stats[plussesMinusesKey] = (game.stats[plussesMinusesKey] || 0) - 1
+      scoreB += 1
+      stats[plussesMinusesKey] = (stats[plussesMinusesKey] || 0) - 1
     } else {
-      game.scoreA += 1
-      game.stats[totalPointsKey] = (game.stats[totalPointsKey] || 0) + 1
-      game.stats[plussesMinusesKey] = (game.stats[plussesMinusesKey] || 0) + 1
+      scoreA += 1
+      stats[totalPointsKey] = (stats[totalPointsKey] || 0) + 1
+      stats[plussesMinusesKey] = (stats[plussesMinusesKey] || 0) + 1
     }
   } else {
     if (isError) {
-      game.scoreA += 1
-      game.stats[plussesMinusesKey] = (game.stats[plussesMinusesKey] || 0) - 1
+      scoreA += 1
+      stats[plussesMinusesKey] = (stats[plussesMinusesKey] || 0) - 1
     } else {
-      game.scoreB += 1
-      game.stats[totalPointsKey] = (game.stats[totalPointsKey] || 0) + 1
-      game.stats[plussesMinusesKey] = (game.stats[plussesMinusesKey] || 0) + 1
+      scoreB += 1
+      stats[totalPointsKey] = (stats[totalPointsKey] || 0) + 1
+      stats[plussesMinusesKey] = (stats[plussesMinusesKey] || 0) + 1
     }
   }
 
-  game.log.push({ player, type })
+  log.push({ player, type })
 
-  res.json(game)
+  const updated = await pool.query(
+    `UPDATE games
+     SET scorea = $1,
+         scoreb = $2,
+         stats = $3,
+         log = $4
+     WHERE id = $5
+     RETURNING *`,
+    [
+      scoreA,
+      scoreB,
+      JSON.stringify(stats),
+      JSON.stringify(log),
+      gameId,
+    ]
+  )
+  consolelog(data)
+  res.json(mapGame(updated.rows[0]))
 })
 
 app.patch("/games/:id", async (req, res) => {
@@ -134,7 +166,7 @@ app.patch("/games/:id", async (req, res) => {
          log = $4
      WHERE id = $5
      RETURNING *`,
-     [scoreA, scoreB, stats, log, gameId]
+     [scoreA, scoreB, JSON.stringify(stats), JSON.stringify(log), gameId]
     )
 
     if (result.rows.length === 0) {

@@ -16,7 +16,24 @@ type Game = NewGameData & {
     scoreB: number
 }
 
-
+const exampleGames: Game[] = [
+  {
+    id: -1,
+    teamA: "Tartu",
+    teamB: "Pärnu",
+    date: "2024-06-01",
+    scoreA: 25,
+    scoreB: 22,
+  },
+  {
+    id: -2,
+    teamA: "Tallinn",
+    teamB: "Saaremaa",
+    date: "2024-06-02",
+    scoreA: 18,
+    scoreB: 25,
+  },
+]
 
 const GamesPage = () => {
     const [games, setGames] = useState<Game[]>([])
@@ -53,7 +70,7 @@ const GamesPage = () => {
     }, [])
 
   return (
-    <div className="min-h-screen text-white px-6 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white px-6 py-10">
       <div className="mx-auto max-w-7xl space-y-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>

@@ -49,7 +49,7 @@ const MatchCard = ({
         </div>
 
         <div className="rounded-2xl bg-slate-950 px-5 py-3 text-center shadow-inner">
-          <p className="text-3xl font-black tabular-nums text-white">
+          <p className="text-3xl font-black tabular-nums text-white whitespace-nowrap">
             {scoreA} : {scoreB}
           </p>
         </div>
