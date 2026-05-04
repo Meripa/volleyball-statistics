@@ -1,5 +1,6 @@
 const express = require("express")
 const cors = require("cors")
+const pool = require("./db")
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -26,7 +27,20 @@ const mapGame = (row) => ({
       : (row.log || []),
 })
 
-let games = []
+const initDb = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS games (
+      id SERIAL PRIMARY KEY,
+      teama TEXT NOT NULL,
+      teamb TEXT NOT NULL,
+      date TEXT NOT NULL,
+      scorea INTEGER NOT NULL DEFAULT 0,
+      scoreb INTEGER NOT NULL DEFAULT 0,
+      stats JSONB NOT NULL DEFAULT '{}'::jsonb,
+      log JSONB NOT NULL DEFAULT '[]'::jsonb
+    )
+  `)
+}
 
 app.get("/games", async (req,res) => {
   const result = await pool.query("SELECT * FROM games ORDER BY id DESC")
@@ -177,14 +191,19 @@ app.patch("/games/:id", async (req, res) => {
     res.json(mapGame(result.rows[0]))
 })
 
-const pool = require("./db")
-
 app.get("/test-db", async (req, res) => {
   const result = await pool.query("SELECT NOW()")
   res.json(result.rows)
 })
 
 
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`)
-})
+initDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on ${PORT}`)
+    })
+  })
+  .catch((error) => {
+    console.error("Failed to initialize database", error)
+    process.exit(1)
+  })
