@@ -16,24 +16,6 @@ type Game = NewGameData & {
     scoreB: number
 }
 
-const exampleGames: Game[] = [
-  {
-    id: -1,
-    teamA: "Tartu",
-    teamB: "Pärnu",
-    date: "2024-06-01",
-    scoreA: 25,
-    scoreB: 22,
-  },
-  {
-    id: -2,
-    teamA: "Tallinn",
-    teamB: "Saaremaa",
-    date: "2024-06-02",
-    scoreA: 18,
-    scoreB: 25,
-  },
-]
 
 const GamesPage = () => {
     const [games, setGames] = useState<Game[]>([])
