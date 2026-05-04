@@ -2,15 +2,30 @@
 
 **Full-stack web application** for tracking volleyball matches and player statistics.
 
-![RallyIQ Preview](./assets/screenshot1.png) <!-- Lisa siia ekraanipilt hiljem -->
+![RallyIQ Preview](./assets/screenshot1.png)
 
 ## ✨ Features
 
-- Create and manage volleyball matches
-- Track detailed player statistics (points, blocks, serves, errors, etc.)
-- View personal match history
-- User authentication (register & login)
-- Data persistence with PostgreSQL
+- 🏐 Create and manage matches
+- 📊 Track detailed player statistics:
+  - Points
+  - Errors
+  - Serves
+  - Blocks
+- ⚡ Real-time stat updates during matches
+- 🧠 Structured event logging system
+- 📁 Persistent data storage (PostgreSQL)
+- 📜 Match history tracking
+
+![RallyIQ Preview](./assets/screenshot2.png) <!-- Lisa siia ekraanipilt hiljem -->
+
+## 🌍 Deployment
+
+- **Frontend:** Deployed on :contentReference[oaicite:0]{index=0}  
+- **Backend API:** Hosted on :contentReference[oaicite:1]{index=1}  
+- **Database:** PostgreSQL (cloud)
+
+The frontend communicates with the backend via REST API.
 
 ## 🛠 Tech Stack
 
@@ -24,9 +39,13 @@
 - Express
 - PostgreSQL
 
-## 💡 Description
+## 🧠 Key Concepts & Implementation
 
-RallyIQ allows users to create volleyball matches, track in-game events, and persist data using a backend API.
+- State-driven stat tracking system  
+- Dynamic player-based data mapping  
+- REST API for match and stats management  
+- Separation of frontend and backend logic  
+- Scalable structure for future AI integration  
 
 ## ▶️ Run locally
 
@@ -45,6 +64,12 @@ cd frontend
 npm install
 npm run dev
 ```
+🔮 Future Improvements
+🎥 Video upload & automatic event detection (AI)
+📊 Advanced analytics (efficiency %, trends)
+👥 User authentication & multi-user support
+☁️ Cloud storage for matches and videos
+📤 Export stats (PDF / CSV)
 
 ---
 
