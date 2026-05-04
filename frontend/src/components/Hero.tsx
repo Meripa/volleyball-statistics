@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const Hero = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white">
@@ -12,12 +14,12 @@ const Hero = () => {
         </p>
 
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="/games"
+          <Link
+            to="/games"
             className="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-semibold text-lg transition-all active:scale-95"
           >
-            Start New Match
-          </a>
+            Go to games!
+          </Link>
 
         </div>
       </div>
