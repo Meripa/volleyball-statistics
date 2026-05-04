@@ -8,7 +8,7 @@ const Hero = () => {
         </h1>
 
         <p className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto">
-          To start, Start New match, Create game and start tracking in game events. Provides also overall scoreboard.
+          To start - Start New match, Create game and start tracking in game events. Provides also overall scoreboard.
         </p>
 
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
