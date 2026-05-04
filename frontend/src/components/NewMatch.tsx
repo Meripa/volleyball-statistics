@@ -5,7 +5,7 @@ import StatTable from './StatTable'
 import EventLog from './EventLog'
 import MatchHeader from './MatchHeader'
 
-import { API_URL} from '../pages/GamesPage'
+import { API_URL} from '../components/Games'
 
 
 
