@@ -316,7 +316,7 @@ useEffect(() => {
 }, [id])
 
 return (
-  <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white py-10 px-6">
+  <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-black text-white py-10 px-6">
     <div className="max-w-7xl mx-auto space-y-6">
       <MatchHeader
         setNumber={1}
@@ -364,9 +364,13 @@ return (
                         [player]: event.target.value,
                       }))
                     }
+                    maxLength={20}
                     className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-sky-500"
                     placeholder={`Player ${player}`}
                   />
+                  <span className="block text-xs text-slate-500">
+                    {(playerNames[player] || "").length}/20 characters
+                  </span>
                 </label>
               ))}
             </div>

@@ -22,8 +22,8 @@ const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
         if (!teamA.trim() || !teamB.trim()) return
 
     onCreateGame({
-        teamA,
-        teamB,
+        teamA: teamA.trim(),
+        teamB: teamB.trim(),
         date,
         })
     }
@@ -55,9 +55,13 @@ const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
               type="text"
               value={teamA}
               onChange={(e) => setTeamA(e.target.value)}
+              maxLength={20}
               placeholder="Tartu"
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-blue-500"
             />
+            <span className="mt-1 block text-xs text-slate-500">
+              {teamA.length}/20 characters
+            </span>
           </div>
 
           <div>
@@ -68,9 +72,13 @@ const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
               type="text"
               value={teamB}
               onChange={(e) => setTeamB(e.target.value)}
+              maxLength={20}
               placeholder="Tallinn"
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-blue-500"
             />
+            <span className="mt-1 block text-xs text-slate-500">
+              {teamB.length}/20 characters
+            </span>
           </div>
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-300">

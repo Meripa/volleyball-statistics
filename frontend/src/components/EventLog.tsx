@@ -35,7 +35,7 @@ const EventLog = ({log, undo, playerNames}: Props) => {
         {[...log].reverse().map((event, index) => (
         <div 
             key={index}
-            className="text-white py-1 border-b border-gray-700"
+            className="wrap-break-words text-white py-1 border-b border-gray-700"
         >
             {log.length - index}. {playerNames[String(event.player)] || `Player ${event.player}`} - {statLabels[event.type]}
         </div>

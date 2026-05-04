@@ -52,7 +52,7 @@ const GamesPage = () => {
     }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white px-6 py-10">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-black text-white px-6 py-10">
       <div className="mx-auto max-w-7xl space-y-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
@@ -72,7 +72,7 @@ const GamesPage = () => {
           </button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-2">
           {showModel && (
             <NewMatchModel 
             onClose={() => setShowModel(false)} 

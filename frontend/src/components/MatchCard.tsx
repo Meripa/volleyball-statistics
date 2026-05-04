@@ -34,31 +34,35 @@ const MatchCard = ({
     <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl transition hover:-translate-y-1 hover:border-slate-700">
       <div className="mb-5 flex items-center justify-between">
         <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-300">
-          Indoor match
+          Beach Volley
         </span>
 
         <span className="text-xs text-slate-500">{date}</span>
       </div>
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-        <div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-wide text-slate-500">
             Team A
           </p>
-          <h2 className="mt-1 text-lg font-bold text-white">{teamA}</h2>
+          <h2 className="mt-1 wrap-break-words text-base font-bold leading-tight text-white sm:text-lg">
+            {teamA}
+          </h2>
         </div>
 
-        <div className="rounded-2xl bg-slate-950 px-5 py-3 text-center shadow-inner">
-          <p className="text-3xl font-black tabular-nums text-white whitespace-nowrap">
+        <div className="w-28 rounded-2xl bg-slate-950 px-3 py-3 text-center shadow-inner">
+          <p className="whitespace-nowrap text-2xl font-black tabular-nums text-white sm:text-3xl">
             {scoreA} : {scoreB}
           </p>
         </div>
 
-        <div className="text-right">
+        <div className="min-w-0 text-right">
           <p className="text-xs uppercase tracking-wide text-slate-500">
             Team B
           </p>
-          <h2 className="mt-1 text-lg font-bold text-white">{teamB}</h2>
+          <h2 className="mt-1 wrap-break-words text-base font-bold leading-tight text-white sm:text-lg">
+            {teamB}
+          </h2>
         </div>
       </div>
 

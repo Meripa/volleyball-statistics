@@ -1,6 +1,7 @@
 import logo from '../assets/images/logo.png'
 
 const tds = "px-3 py-2 border border-white-700"
+const playerCell = `${tds} max-w-40 break-words`
 {/* Addable Players*/}
 const players = ["1", "2", "3", "4"];
 {/* Addable Results*/}
@@ -55,7 +56,7 @@ const StatTable = ({stats, playerNames}: Props) => {
           <tbody>
             {players.map((player) => (
               <tr key={player}>
-                <td className={tds}>{playerNames[player] || `Player ${player}`}</td>
+                <td className={playerCell}>{playerNames[player] || `Player ${player}`}</td>
 
                 {statTypes.map((stat) => (
                   <td key={stat} className={tds}>
