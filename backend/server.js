@@ -149,7 +149,6 @@ app.post("/games/:id/events", async (req, res) => {
       gameId,
     ]
   )
-  consolelog(data)
   res.json(mapGame(updated.rows[0]))
 })
 

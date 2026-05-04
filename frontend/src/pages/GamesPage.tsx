@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import NewMatchModel from "../components/NewMatchModel"
 import MatchCard from "../components/MatchCard"
 
-export const API_URL = "https://volleyball-statistics.onrender.com/"
+export const API_URL = "https://volleyball-statistics.onrender.com"
 
 type NewGameData = {
     teamA: string,
