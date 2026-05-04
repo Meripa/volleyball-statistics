@@ -73,5 +73,9 @@ npm run dev
 - 📤 Export stats (PDF / CSV)  
 
 ---
+## 👨‍💻 Author
 
+Built by Meris Pärna
+
+---
 Built as a fullstack learning project.
