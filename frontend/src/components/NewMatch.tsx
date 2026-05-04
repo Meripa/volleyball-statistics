@@ -5,6 +5,8 @@ import StatTable from './StatTable'
 import EventLog from './EventLog'
 import MatchHeader from './MatchHeader'
 
+import { API_URL} from '../pages/GamesPage'
+
 
 
 type Stats = {
@@ -90,7 +92,7 @@ const NewMatch = () => {
 const handleSaveMatch = async () => {
   if (!id) return
 
-  const res = await fetch(`http://localhost:5000/games/${id}`, {
+  const res = await fetch(`${API_URL}/games/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -166,7 +168,7 @@ const { id } = useParams()
 useEffect(() => {
   if (!id) return
 
-  fetch(`http://localhost:5000/games/${id}`)
+  fetch(`${API_URL}/games/${id}`)
     .then(res => res.json())
     .then(data => {
       setGame(data)
