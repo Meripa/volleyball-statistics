@@ -21,8 +21,8 @@
 
 ## 🌍 Deployment
 
-- **Frontend:** Deployed on :contentReference[oaicite:0]{index=0}  
-- **Backend API:** Hosted on :contentReference[oaicite:1]{index=1}  
+- **Frontend:** Deployed on Vercel
+- **Backend API:** Hosted on Render
 - **Database:** PostgreSQL (cloud)
 
 The frontend communicates with the backend via REST API.
@@ -64,12 +64,13 @@ cd frontend
 npm install
 npm run dev
 ```
-🔮 Future Improvements
-🎥 Video upload & automatic event detection (AI)
-📊 Advanced analytics (efficiency %, trends)
-👥 User authentication & multi-user support
-☁️ Cloud storage for matches and videos
-📤 Export stats (PDF / CSV)
+## 🔮 Future Improvements
+
+- 🎥 Video upload & automatic event detection (AI)  
+- 📊 Advanced analytics (efficiency %, trends)  
+- 👥 User authentication & multi-user support  
+- ☁️ Cloud storage for matches and videos  
+- 📤 Export stats (PDF / CSV)  
 
 ---
 
