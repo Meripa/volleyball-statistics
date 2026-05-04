@@ -106,7 +106,6 @@ app.delete("/games/:id", async (req, res) =>{
 }) 
 
 
-// Events
 app.post("/games/:id/events", async (req, res) => {
   const gameId = Number(req.params.id)
   const { player, type } = req.body

@@ -31,7 +31,6 @@ const GamesPage = () => {
             body: JSON.stringify(newGame)
         })
         const createdGame = await res.json()
-        console.log(createdGame)
         setGames((prev) => [createdGame, ...prev])
         setShowModel(false)
     }

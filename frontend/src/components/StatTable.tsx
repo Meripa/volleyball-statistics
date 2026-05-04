@@ -2,9 +2,9 @@ import logo from '../assets/images/logo.png'
 
 const tds = "px-3 py-2 border border-white-700"
 const playerCell = `${tds} max-w-40 break-words`
-{/* Addable Players*/}
+
 const players = ["1", "2", "3", "4"];
-{/* Addable Results*/}
+
 const statTypes = [
 
   "totalPoints",
@@ -17,7 +17,6 @@ const statTypes = [
   "blockPoint",
 ];
 
-{/* Change names in inputs*/}
 const statLabels: Record<string, string> = {
   totalPoints: "Total Points",
   plussesMinuses: "+/-",
@@ -40,7 +39,6 @@ const StatTable = ({stats, playerNames}: Props) => {
       <table className="w-full text-sm text-left">
         <thead>
           <tr >
-            {/* Creates heading for inputs */}
             <th className='border text-white'><img className="h-18 mx-auto object-fill" src={logo}/></th>
               {statTypes.map((stat) => (
               <th

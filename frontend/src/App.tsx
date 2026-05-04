@@ -10,8 +10,6 @@ const router = createBrowserRouter(
       <Route index element={<HomePage />}/>
       <Route path='newmatch' element={<NewMatch />}/>
       <Route path='games' element={<GamesPage />}/>
-
-      {/* Specific game opening */}
       <Route path='games/:id' element={<NewMatch/>}/>
     </Route>
     )

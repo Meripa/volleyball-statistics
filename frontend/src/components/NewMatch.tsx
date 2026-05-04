@@ -68,12 +68,9 @@ const NewMatch = () => {
   const [game, setGame] = useState<Game | null>(null)
 
   const [log, setLog] = useState<LogItem[]>([])
-  // Adding scores
     const handleClick = (player: number, type: string) => {
       const key = type + player
-      // Total points per person
       const totalPointsKey = "totalPoints" + player
-      // Plusses minuses per person
       const plussesMinusesKey = "plussesMinuses" + player
 
       setStats((prev) => {
@@ -86,16 +83,13 @@ const NewMatch = () => {
         const isError = type.includes("Error")
 
 
-        // Adding Main Score
         if (isTeamAPlayer) {
           if (isError){
             newStats.scoreB = prev.scoreB + 1
-            // Plusses minuses -
             newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) - 1
             
           }else {
             newStats.scoreA = prev.scoreA + 1
-            // Total point per person
             newStats[totalPointsKey] = (prev[totalPointsKey] || 0) + 1
             newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) + 1
           } 
@@ -106,7 +100,6 @@ const NewMatch = () => {
 
           } else {
             newStats.scoreB = prev.scoreB + 1
-            // Total point per person
             newStats[totalPointsKey] = (prev[totalPointsKey] || 0) + 1
             newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) + 1
           }
@@ -256,26 +249,18 @@ const handleUndo = () => {
 
     if (isTeamAPlayer) {
       if (isError) {
-        // Click: Team A player error -> scoreB +1, +/- -1
-        // Undo: scoreB -1, +/- +1
         newStats.scoreB = Math.max(prev.scoreB - 1, 0)
         newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) + 1
       } else {
-        // Click: Team A player positive -> scoreA +1, totalPoints +1, +/- +1
-        // Undo: scoreA -1, totalPoints -1, +/- -1
         newStats.scoreA = Math.max(prev.scoreA - 1, 0)
         newStats[totalPointsKey] = Math.max((prev[totalPointsKey] || 0) - 1, 0)
         newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) - 1
       }
     } else {
       if (isError) {
-        // Click: Team B player error -> scoreA +1, +/- -1
-        // Undo: scoreA -1, +/- +1
         newStats.scoreA = Math.max(prev.scoreA - 1, 0)
         newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) + 1
       } else {
-        // Click: Team B player positive -> scoreB +1, totalPoints +1, +/- +1
-        // Undo: scoreB -1, totalPoints -1, +/- -1
         newStats.scoreB = Math.max(prev.scoreB - 1, 0)
         newStats[totalPointsKey] = Math.max((prev[totalPointsKey] || 0) - 1, 0)
         newStats[plussesMinusesKey] = (prev[plussesMinusesKey] || 0) - 1

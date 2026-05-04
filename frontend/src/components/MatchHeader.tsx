@@ -9,8 +9,6 @@ type Props = {
 };
 
 const MatchHeader = ({ setNumber, scoreA, scoreB, teamA, teamB}: Props) => {
-  // Score states
-
   return (
     <div className="bg-[#121821] p-4 rounded-2xl shadow-lg text-center">
 

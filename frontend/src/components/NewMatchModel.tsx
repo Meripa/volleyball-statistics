@@ -11,7 +11,6 @@ type Props = {
 }
 
 const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
-    // For date
     const today = new Date().toISOString().split("T")[0]
     const [teamA, setTeamA] = useState("")
     const [teamB, setTeamB] = useState("")
