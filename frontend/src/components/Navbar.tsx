@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../assets/images/logo.png';
+import { UserButton } from '@clerk/clerk-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -35,7 +36,26 @@ const Navbar = () => {
             >
               Home
             </Link>
+
+            <Link to="Login"
+            className={`font-medium transition-colors hover:text-white ${isActive('/') ? 'text-white' : 'text-slate-400'}`}
+            >
+              Login
+            </Link>
+
+            <Link to="Register"
+            className={`font-medium transition-colors hover:text-white ${isActive('/') ? 'text-white' : 'text-slate-400'}`}
+            >
+              Register
+            </Link>
+            <nav
+            className={`font-medium transition-colors hover:text-white ${isActive('/') ? 'text-white' : 'text-slate-400'}`}
+            >
+              <UserButton />
+            </nav>
+            
           </div>
+
         </div>
       </div>
     </nav>
