@@ -1,4 +1,3 @@
-import React from 'react'
 import MyGames from "../components/MyGames"
 
 const MyGamesPages = () => {
