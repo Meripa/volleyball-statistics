@@ -7,6 +7,7 @@ type Props = {
   scoreA: number
   scoreB: number
   date: string
+  playerNames?: Record<string, string>
   onDelete: (id:number) => void
 }
 
@@ -15,21 +16,32 @@ const MatchCard = ({
   teamA, 
   teamB, 
   scoreA, 
-  scoreB, 
+  scoreB,
+  playerNames,
   date, 
   onDelete 
 }: Props) => {
   const handleDeleteClick = () => {
     const isConfirmed = window.confirm(
-      `Are you sure you want to delete ${teamA} vs ${teamB}?`
+      `Are you sure you want to delete ${teamAPlayers} vs ${teamBPlayers}?`
     )
 
     if (!isConfirmed) return
 
     onDelete(id)
   }
-
   
+  const teamAPlayers =
+    playerNames
+      ? `${playerNames["1"] || "Player 1"} / ${playerNames["2"] || "Player 2"}`
+      : teamA
+
+  const teamBPlayers =
+    playerNames
+      ? `${playerNames["3"] || "Player 3"} / ${playerNames["4"] || "Player 4"}`
+      : teamB
+
+
   return (
     <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl transition hover:-translate-y-1 hover:border-slate-700">
       <div className="mb-5 flex items-center justify-between">
@@ -46,7 +58,7 @@ const MatchCard = ({
             Team A
           </p>
           <h2 className="mt-1 wrap-break-words text-base font-bold leading-tight text-white sm:text-lg">
-            {teamA}
+            {teamAPlayers}
           </h2>
         </div>
 
@@ -61,7 +73,7 @@ const MatchCard = ({
             Team B
           </p>
           <h2 className="mt-1 wrap-break-words text-base font-bold leading-tight text-white sm:text-lg">
-            {teamB}
+            {teamBPlayers}
           </h2>
         </div>
       </div>

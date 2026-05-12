@@ -147,7 +147,7 @@ const MatchPage = () => {
   // Player order
   const playerOrder =
     layoutMode === "horizontal"
-      ? [1, 3, 2, 4]
+      ? [1, 2, 3, 4]
       : [1, 2, 3, 4]
 
   // Load game
@@ -488,6 +488,7 @@ const MatchPage = () => {
           setsWonB={stats.setsWonB}
           scoreA={stats.scoreA}
           scoreB={stats.scoreB}
+          playerNames={playerNames}
           setHistory={stats.setHistory}
           teamA={game?.teamA || "Team A"}
           teamB={game?.teamB || "Team B"}

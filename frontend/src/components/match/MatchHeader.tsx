@@ -9,6 +9,8 @@ type Props = {
   teamA: string
   teamB: string
 
+  playerNames: Record<string, string>
+
   setHistory: {
     scoreA: number
     scoreB: number
@@ -23,6 +25,7 @@ const MatchHeader = ({
   scoreB,
   teamA,
   teamB,
+  playerNames,
   setHistory,
 }: Props) => {
 
@@ -39,7 +42,7 @@ const MatchHeader = ({
           </p>
 
           <h2 className="text-lg font-bold text-white">
-            {teamA}
+            {playerNames["1"]} / {playerNames["2"]}
           </h2>
         </div>
 
@@ -76,7 +79,7 @@ const MatchHeader = ({
           </p>
 
           <h2 className="text-lg font-bold text-white">
-            {teamB}
+            {playerNames["3"]} / {playerNames["4"]}
           </h2>
         </div>
 
