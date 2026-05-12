@@ -44,13 +44,53 @@ const Games = () => {
 
     }
 
+    const [loading, setLoading] = useState(true)
+
     useEffect(() => {
         fetch(`${API_URL}/games`)
             .then((res) => res.json())
             .then((data) => setGames(data))
             .catch((err) => console.error(err))
+            .finally(() => {
+              setLoading(false)
+            })
     }, [])
+    if (loading) {
+  return (
+    <div className="
+      flex
+      min-h-screen
+      items-center
+      justify-center
+      bg-linear-to-br
+      from-slate-950
+      via-slate-900
+      to-black
+    ">
 
+      <div className="text-center">
+
+        {/* Spinner */}
+        <div className="
+          mx-auto
+          h-12
+          w-12
+          animate-spin
+          rounded-full
+          border-4
+          border-slate-700
+          border-t-cyan-400
+        " />
+
+        <p className="mt-4 text-sm text-slate-400">
+          Loading matches...
+        </p>
+
+      </div>
+
+    </div>
+  )
+}
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-black text-white px-6 py-10">
       <div className="mx-auto max-w-7xl space-y-8">

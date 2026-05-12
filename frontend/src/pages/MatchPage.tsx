@@ -6,7 +6,7 @@ import PlayerGrid from "../components/match/PlayerGrid"
 import ActionPanel from "../components/match/ActionPanel"
 import RecentEvents from "../components/match/RecentEvents"
 import StatTable from "../components/StatTable"
-
+import PlayerEditorModal from "../components/match/PlayerEditorModal"
 import { API_URL } from "../components/Games"
 
 import type { Stats, Game, LogItem } from "../types/match"
@@ -140,6 +140,9 @@ const MatchPage = () => {
   const [game, setGame] = useState<Game | null>(null)
 
   const [log, setLog] = useState<LogItem[]>([])
+
+  const [showPlayerEditor, setShowPlayerEditor] =
+  useState(false)
 
   // Player order
   const playerOrder =
@@ -506,7 +509,20 @@ const MatchPage = () => {
           >
             Save Match
           </button>
-
+          <button
+            onClick={() => setShowPlayerEditor(true)}
+            className="
+              rounded-xl
+              bg-slate-700
+              px-4
+              py-2
+              text-sm
+              font-bold
+              hover:bg-slate-600
+            "
+          >
+            Edit Players
+          </button>
           <button
             onClick={handleDownloadPdf}
             className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold hover:bg-sky-500"
@@ -597,7 +613,12 @@ const MatchPage = () => {
             </div>
           </div>
         )}
-
+        <PlayerEditorModal
+          open={showPlayerEditor}
+          playerNames={playerNames}
+          setPlayerNames={setPlayerNames}
+          onClose={() => setShowPlayerEditor(false)}
+        />
 
         </div>
       </div>
