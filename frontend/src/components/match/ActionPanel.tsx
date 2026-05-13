@@ -23,7 +23,7 @@ const ActionPanel = ({
           : "Select a Player"}
       </h2>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="mt-4 flex gap-2">
         {actions.map((action) => (
           <button
             key={action.type}
@@ -32,13 +32,21 @@ const ActionPanel = ({
               if (!selectedPlayer) return
               handleClick(selectedPlayer, action.type)
             }}
-                className={`
+              className={`
                 ${action.color}
 
-                h-24
-                rounded-2xl
-                px-6
-                text-lg
+                flex-1
+                min-w-0
+
+                rounded-xl
+                px-3
+                py-3
+                pt-5
+                pb-5
+
+                
+
+                text-sm
                 font-bold
                 text-white
 
@@ -46,13 +54,14 @@ const ActionPanel = ({
                 duration-150
 
                 hover:scale-[1.02]
+
                 active:scale-95
                 active:brightness-125
 
                 disabled:cursor-not-allowed
                 disabled:bg-slate-800
                 disabled:text-slate-500
-                `}
+              `}
           >
             {action.label}
           </button>

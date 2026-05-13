@@ -23,8 +23,6 @@ const MatchHeader = ({
   setsWonB,
   scoreA,
   scoreB,
-  teamA,
-  teamB,
   playerNames,
   setHistory,
 }: Props) => {

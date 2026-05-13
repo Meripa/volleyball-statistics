@@ -39,6 +39,11 @@ export const actions = [
     type: "serveAce",
     color: "bg-green-600 hover:bg-green-500",
   },
+    {
+    label: "Serve Error",
+    type: "serveError",
+    color: "bg-red-600 hover:bg-red-500",
+  },
   {
     label: "Block",
     type: "blockPoint",

@@ -63,16 +63,16 @@ const PlayerCard = ({
         </div>
 
         <div className="flex justify-between text-slate-400">
-          <span>Errors</span>
+          <span>Serve Errors</span>
           <span className="font-bold text-white">
-            {stats["attackError" + player] || 0}
+            {stats["serveError" + player] || 0}
           </span>
         </div>
 
         <div className="flex justify-between text-slate-400">
-          <span>Aces</span>
+          <span>Errors</span>
           <span className="font-bold text-white">
-            {stats["serveAce" + player] || 0}
+            {stats["attackError" + player] || 0}
           </span>
         </div>
 
