@@ -10,6 +10,9 @@ app.use(express.json())
 
 const mapGame = (row) => ({
   id: row.id,
+  matchType: row.matchtype,
+  teamASize: row.teamasize,
+  teamBSize: row.teambsize,
   teamA: row.teama,
   teamB: row.teamb,
   date: row.date,
@@ -36,6 +39,7 @@ const initDb = async () => {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS games (
       id SERIAL PRIMARY KEY,
+      matchtype TEXT NOT NULL DEFAULT 'beach',
       teama TEXT NOT NULL,
       teamb TEXT NOT NULL,
       date TEXT NOT NULL,
@@ -51,6 +55,20 @@ const initDb = async () => {
     ALTER TABLE games
     ADD COLUMN IF NOT EXISTS playernames JSONB NOT NULL DEFAULT '{}'::jsonb
   `)
+  await pool.query(`
+  ALTER TABLE games
+  ADD COLUMN IF NOT EXISTS matchtype TEXT NOT NULL DEFAULT 'beach'
+  `)
+
+  await pool.query(`
+  ALTER TABLE games
+  ADD COLUMN IF NOT EXISTS teamasize INTEGER NOT NULL DEFAULT 2
+  `)
+
+  await pool.query(`
+    ALTER TABLE games
+    ADD COLUMN IF NOT EXISTS teambsize INTEGER NOT NULL DEFAULT 2
+  `)
 }
 
 app.get("/games", async (req,res) => {
@@ -59,13 +77,20 @@ app.get("/games", async (req,res) => {
 })
 
 app.post("/games", async (req,res) => {
-    const { teamA, teamB, date} = req.body
+    const { teamA, teamB, date, matchType, teamASize, teamBSize} = req.body
 
     const result = await pool.query(
-      `INSERT INTO games (teama, teamb, date)
-      VALUES ($1, $2, $3)
+      `INSERT INTO games (
+        matchtype,
+        teamasize,
+        teambsize,
+        teama,
+        teamb,
+        date
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *`,
-      [teamA, teamB, date]
+      [matchType || "beach", teamASize || 2, teamBSize || 2, teamA, teamB, date]
     )
 
     res.status(201).json(mapGame(result.rows[0]))
@@ -132,7 +157,8 @@ app.post("/games/:id/events", async (req, res) => {
 
   stats[key] = (stats[key] || 0) + 1
 
-  const isTeamAPlayer = player <= 2
+  const isTeamAPlayer =
+    player <= game.teamasize
   const isError = type.includes("Error")
 
   if (isTeamAPlayer) {

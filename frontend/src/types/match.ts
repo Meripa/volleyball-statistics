@@ -16,16 +16,33 @@ export type Stats = {
   }[]
 }
 
+export type MatchType =
+  | "beach"
+  | "training"
+
 // Game type
 
+
+
 export type Game = {
-    id: number,
-    teamA: string,
-    teamB: string,
-    date: string,
-    scoreA: number,
-    scoreB: number,
-    playerNames?: Record<string, string>
+  id: number
+
+  matchType: MatchType
+
+  teamASize: number
+  teamBSize: number
+
+  teamA: string
+  teamB: string
+
+  date: string
+
+  scoreA: number
+  scoreB: number
+
+  stats?: Stats
+  log?: LogItem[]
+  playerNames?: Record<string, string>
 }
 
 // Log type
@@ -34,3 +51,5 @@ export type LogItem = {
     player: number
     type: string
 }
+
+

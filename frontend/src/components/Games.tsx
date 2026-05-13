@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import NewMatchModel from "../components/NewMatchModel"
 import MatchCard from "../components/MatchCard"
+import type { Game } from "../types/match"
 
 export const API_URL = "https://volleyball-statistics.onrender.com"
 
@@ -8,12 +9,9 @@ type NewGameData = {
     teamA: string,
     teamB: string,
     date: string
-}
-
-type Game = NewGameData & {
-    id: number
-    scoreA: number
-    scoreB: number
+    matchType: "beach" | "training"
+    teamASize: number
+    teamBSize: number
 }
 
 

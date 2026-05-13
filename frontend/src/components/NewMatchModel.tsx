@@ -1,8 +1,16 @@
 import { useState } from "react"
 type NewGameData = {
-    teamA: string,
-    teamB: string,
-    date: string,
+  teamA: string
+  teamB: string
+
+  date: string
+
+  matchType:
+    | "beach"
+    | "training"
+
+  teamASize: number
+  teamBSize: number
 }
 
 type Props = {
@@ -10,22 +18,58 @@ type Props = {
   onCreateGame: (game: NewGameData) => void
 }
 
+
 const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
     const today = new Date().toISOString().split("T")[0]
     const [teamA, setTeamA] = useState("")
     const [teamB, setTeamB] = useState("")
     const [date, setDate] = useState(today)
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        if (!teamA.trim() || !teamB.trim()) return
+    const handleSubmit = async (
+      e: React.FormEvent<HTMLFormElement>
+    ) => {
 
-    onCreateGame({
-        teamA: teamA.trim(),
-        teamB: teamB.trim(),
-        date,
+      e.preventDefault()
+
+      if (creating) return
+
+      if (!teamA.trim() || !teamB.trim())
+        return
+
+      try {
+
+        setCreating(true)
+
+        await onCreateGame({
+          teamA: teamA.trim(),
+          teamB: teamB.trim(),
+
+          date,
+
+          matchType,
+
+          teamASize,
+          teamBSize,
         })
+
+      } finally {
+
+        setCreating(false)
+
+      }
     }
+    const [matchType, setMatchType] = useState<
+      "beach" | "training"
+    >("beach")
+
+    const [teamASize, setTeamASize] =
+     useState(2)
+
+    const [teamBSize, setTeamBSize] =
+      useState(2)
+
+    const [creating, setCreating] =
+       useState(false)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
       <div className="w-full max-w-lg rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
@@ -92,6 +136,150 @@ const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-blue-500"
             />
           </div>
+          {/* Match Type and player count */}
+          <div className="space-y-2">
+
+          <label className="text-sm text-slate-400">
+            Match Type
+          </label>
+
+          <div className="flex gap-2">
+
+            <button
+              type="button"
+              onClick={() => {
+                setMatchType("beach")
+                setTeamASize(2)
+                setTeamBSize(2)
+              }}
+
+              className={`
+                flex-1
+                rounded-xl
+                px-4
+                py-3
+                font-semibold
+                transition
+
+                ${
+                  matchType === "beach"
+                    ? "bg-cyan-600 text-white"
+                    : "bg-slate-800 text-slate-300"
+                }
+              `}
+            >
+              Beach
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setMatchType("training")
+              }
+
+              className={`
+                flex-1
+                rounded-xl
+                px-4
+                py-3
+                font-semibold
+                transition
+
+                ${
+                  matchType === "training"
+                    ? "bg-cyan-600 text-white"
+                    : "bg-slate-800 text-slate-300"
+                }
+              `}
+            >
+              Training
+            </button>
+
+          </div>
+
+        </div>
+
+        {matchType === "training" && (
+
+          <div className="grid grid-cols-2 gap-4">
+
+            {/* Team A */}
+            <div>
+
+              <label className="text-sm text-slate-400">
+                Team A Players
+              </label>
+
+              <input
+                type="number"
+                min={1}
+                max={6}
+
+                value={teamASize}
+
+                onChange={(e) =>
+                  setTeamASize(
+                    Number(e.target.value)
+                  )
+                }
+
+                className="
+                  mt-2
+                  w-full
+                  rounded-xl
+                  border
+                  border-slate-700
+                  bg-slate-950
+                  px-4
+                  py-3
+                  text-white
+                  outline-none
+                  focus:border-cyan-500
+                "
+              />
+
+            </div>
+
+            {/* Team B */}
+            <div>
+
+              <label className="text-sm text-slate-400">
+                Team B Players
+              </label>
+
+              <input
+                type="number"
+                min={1}
+                max={6}
+
+                value={teamBSize}
+
+                onChange={(e) =>
+                  setTeamBSize(
+                    Number(e.target.value)
+                  )
+                }
+
+                className="
+                  mt-2
+                  w-full
+                  rounded-xl
+                  border
+                  border-slate-700
+                  bg-slate-950
+                  px-4
+                  py-3
+                  text-white
+                  outline-none
+                  focus:border-cyan-500
+                "
+              />
+
+            </div>
+
+          </div>
+        )}
+
 
           <div className="flex gap-3 pt-4">
             <button
@@ -104,9 +292,13 @@ const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
 
             <button
               type="submit"
-              className="flex-1 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-500"
+              disabled={creating}
+              
+              className="flex-1 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Create match
+              {creating
+                ? "Creating..."
+                : "Create match"}
             </button>
           </div>
         </form>
