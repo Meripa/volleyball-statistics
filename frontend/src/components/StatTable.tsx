@@ -3,7 +3,6 @@ import logo from '../assets/images/logo.png'
 const tds = "px-3 py-2 border border-white-700"
 const playerCell = `${tds} max-w-40 break-words`
 
-const players = ["1", "2", "3", "4"];
 
 const statTypes = [
 
@@ -34,6 +33,7 @@ type Props = {
 }
 
 const StatTable = ({stats, playerNames}: Props) => {
+  const players = Object.keys(playerNames)
   return (
     <div className="result flex-1 bg-gray-900 p-4 rounded-2xl shadow-lg overflow-x-auto">
       <table className="w-full text-sm text-left">
