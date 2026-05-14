@@ -72,6 +72,14 @@ const BeachMatch = ({ game }: Props) => {
       ...(game.stats || {}),
     })
 
+  const [setStatsData, setSetStatsData] =
+    useState<Record<number, any>>({
+      1: {},
+    })
+
+  const [selectedStatsView, setSelectedStatsView] =
+    useState<"match" | number>("match")
+
   const [pendingSetWinner, setPendingSetWinner] =
     useState<"A" | "B" | null>(null)
 
@@ -188,6 +196,31 @@ const BeachMatch = ({ game }: Props) => {
     const totalPointsKey = "totalPoints" + player
     const plussesMinusesKey =
       "plussesMinuses" + player
+    const isError = type.includes("Error")
+
+    setSetStatsData((prev) => {
+      const currentSetStats =
+        prev[stats.currentSet] || {}
+
+      const updatedSetStats = {
+        ...currentSetStats,
+        [key]: (currentSetStats[key] || 0) + 1,
+      }
+
+      if (!isError) {
+        updatedSetStats[totalPointsKey] =
+          (currentSetStats[totalPointsKey] || 0) + 1
+      }
+
+      updatedSetStats[plussesMinusesKey] =
+        (currentSetStats[plussesMinusesKey] || 0) +
+        (isError ? -1 : 1)
+
+      return {
+        ...prev,
+        [stats.currentSet]: updatedSetStats,
+      }
+    })
 
     setStats((prev) => {
 
@@ -198,7 +231,6 @@ const BeachMatch = ({ game }: Props) => {
 
       const isTeamAPlayer =
         player <= game.teamASize
-      const isError = type.includes("Error")
 
       if (isTeamAPlayer) {
 
@@ -407,6 +439,35 @@ const handleSaveMatch = async () => {
     const plussesMinusesKey =
       "plussesMinuses" + last.player
 
+    const currentSet = stats.currentSet
+
+    setSetStatsData((prev) => {
+      const currentSetStats =
+        prev[currentSet] || {}
+      const isError =
+        last.type.includes("Error")
+
+      return {
+        ...prev,
+        [currentSet]: {
+          ...currentSetStats,
+          [key]: Math.max(
+            (currentSetStats[key] || 0) - 1,
+            0
+          ),
+          [totalPointsKey]: isError
+            ? currentSetStats[totalPointsKey] || 0
+            : Math.max(
+                (currentSetStats[totalPointsKey] || 0) - 1,
+                0
+              ),
+          [plussesMinusesKey]:
+            (currentSetStats[plussesMinusesKey] || 0) +
+            (isError ? 1 : -1),
+        },
+      }
+    })
+
     setStats((prev) => {
 
       const newStats = {
@@ -479,6 +540,15 @@ const handleSaveMatch = async () => {
 
     setLog((prev) => prev.slice(0, -1))
   }
+
+  const displayedStats =
+    selectedStatsView === "match"
+      ? stats
+      : {
+          scoreA: 0,
+          scoreB: 0,
+          ...(setStatsData[selectedStatsView] || {}),
+        }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-black text-white py-10 px-6">
@@ -571,10 +641,69 @@ const handleSaveMatch = async () => {
               setSelectedPlayer={setSelectedPlayer}
             />
 
-            <StatTable
-              stats={stats}
-              playerNames={playerNames}
-            />
+            <div className="space-y-4">
+
+              <div className="flex flex-wrap gap-2">
+
+                <button
+                  onClick={() =>
+                    setSelectedStatsView("match")
+                  }
+                  className={`
+                    rounded-xl
+                    px-4
+                    py-2
+                    text-sm
+                    font-bold
+
+                    ${
+                      selectedStatsView === "match"
+                        ? "bg-cyan-600 text-white"
+                        : "bg-slate-800 text-slate-300"
+                    }
+                  `}
+                >
+                  Match
+                </button>
+
+                {Array.from({
+                  length: stats.currentSet,
+                }).map((_, index) => {
+                  const setNumber = index + 1
+
+                  return (
+                    <button
+                      key={setNumber}
+                      onClick={() =>
+                        setSelectedStatsView(setNumber)
+                      }
+                      className={`
+                        rounded-xl
+                        px-4
+                        py-2
+                        text-sm
+                        font-bold
+
+                        ${
+                          selectedStatsView === setNumber
+                            ? "bg-cyan-600 text-white"
+                            : "bg-slate-800 text-slate-300"
+                        }
+                      `}
+                    >
+                      Set {setNumber}
+                    </button>
+                  )
+                })}
+
+              </div>
+
+              <StatTable
+                stats={displayedStats}
+                playerNames={playerNames}
+              />
+
+            </div>
             <RecentEvents
               log={log}
               playerNames={playerNames}
