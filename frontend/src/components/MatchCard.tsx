@@ -35,6 +35,7 @@ const MatchCard = ({
     onDelete(id)
   }
   const hasPlayerNames =
+    matchType !== "training" &&
     playerNames &&
     Object.keys(playerNames).length > 0
 

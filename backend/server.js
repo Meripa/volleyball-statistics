@@ -1,6 +1,9 @@
 const express = require("express")
 const cors = require("cors")
 const pool = require("./db")
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
+require("dotenv").config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -37,6 +40,15 @@ const mapGame = (row) => ({
 
 const initDb = async () => {
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `)
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS games (
       id SERIAL PRIMARY KEY,
       matchtype TEXT NOT NULL DEFAULT 'beach',
@@ -49,6 +61,10 @@ const initDb = async () => {
       log JSONB NOT NULL DEFAULT '[]'::jsonb,
       playernames JSONB NOT NULL DEFAULT '{}'::jsonb
     )
+  `)
+  await pool.query(`
+    ALTER TABLE games
+    ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
   `)
 
   await pool.query(`
@@ -70,6 +86,7 @@ const initDb = async () => {
     ADD COLUMN IF NOT EXISTS teambsize INTEGER NOT NULL DEFAULT 2
   `)
 }
+
 
 app.get("/games", async (req,res) => {
   const result = await pool.query("SELECT * FROM games ORDER BY id DESC")
@@ -94,6 +111,125 @@ app.post("/games", async (req,res) => {
     )
 
     res.status(201).json(mapGame(result.rows[0]))
+})
+
+app.post("/register", async (req, res) => {
+
+  try {
+
+    const {
+      email,
+      password
+    } = req.body
+
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Missing fields"
+      })
+    }
+
+    const existingUser = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    )
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({
+        message: "User already exists"
+      })
+    }
+
+    const hashedPassword =
+      await bcrypt.hash(password, 10)
+
+    const result = await pool.query(
+      `
+      INSERT INTO users (
+        email,
+        password
+      )
+      VALUES ($1, $2)
+      RETURNING id, email
+      `,
+      [email, hashedPassword]
+    )
+
+    res.status(201).json({
+      message: "User created",
+      user: result.rows[0]
+    })
+
+  } catch (error) {
+
+    console.error(error)
+
+    res.status(500).json({
+      message: "Server error"
+    })
+  }
+})
+
+app.post("/login", async (req, res) => {
+
+  try {
+
+    const {
+      email,
+      password
+    } = req.body
+
+    const result = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({
+        message: "Invalid credentials"
+      })
+    }
+
+    const user = result.rows[0]
+
+    const isMatch =
+      await bcrypt.compare(
+        password,
+        user.password
+      )
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid credentials"
+      })
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d"
+      }
+    )
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email
+      }
+    })
+
+  } catch (error) {
+
+    console.error(error)
+
+    res.status(500).json({
+      message: "Server error"
+    })
+  }
 })
 
 app.get("/", (req, res) => {

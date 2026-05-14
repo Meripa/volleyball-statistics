@@ -23,7 +23,8 @@ const MatchHeader = ({
   setsWonB,
   scoreA,
   scoreB,
-  playerNames,
+  teamA,
+  teamB,
   setHistory,
 }: Props) => {
 
@@ -40,7 +41,7 @@ const MatchHeader = ({
           </p>
 
           <h2 className="text-lg font-bold text-white">
-            {playerNames["1"]} / {playerNames["2"]}
+            {teamA}
           </h2>
         </div>
 
@@ -77,7 +78,7 @@ const MatchHeader = ({
           </p>
 
           <h2 className="text-lg font-bold text-white">
-            {playerNames["3"]} / {playerNames["4"]}
+            {teamB}
           </h2>
         </div>
 
