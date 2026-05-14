@@ -110,20 +110,24 @@ const Games = () => {
           </button>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="space-y-5">
+
           {showModel && (
             <NewMatchModel 
-            onClose={() => setShowModel(false)} 
-            onCreateGame={handleCreateGame}
+              onClose={() => setShowModel(false)} 
+              onCreateGame={handleCreateGame}
             />
           )}
+
           {games.map((game) => (
-            <MatchCard key={game.id}
-            {...game}
-            matchType={game.matchType}
-            onDelete={handleDeleteGame}
+            <MatchCard
+              key={game.id}
+              {...game}
+              matchType={game.matchType}
+              onDelete={handleDeleteGame}
             />
           ))}
+
         </div>
       </div>
     </div>

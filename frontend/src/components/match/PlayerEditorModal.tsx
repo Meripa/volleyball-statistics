@@ -18,10 +18,22 @@ const PlayerEditorModal = ({
   playerNames,
   setPlayerNames,
   teamASize,
+  teamBSize,
   onClose,
 }: Props) => {
 
   if (!open) return null
+
+  const teamAPlayers = Array.from(
+    { length: teamASize },
+    (_, index) => (index + 1).toString()
+  )
+
+  const teamBPlayers = Array.from(
+    { length: teamBSize },
+    (_, index) =>
+      (teamASize + index + 1).toString()
+  )
 
   return (
     <div className="
@@ -83,12 +95,7 @@ const PlayerEditorModal = ({
             Team A
           </h2>
 
-          {Object.keys(playerNames)
-            .filter(
-              (player) =>
-                Number(player) <= teamASize
-            )
-            .map((player) => (
+          {teamAPlayers.map((player) => (
 
               <div
                 key={player}
@@ -151,12 +158,7 @@ const PlayerEditorModal = ({
             Team B
           </h2>
 
-          {Object.keys(playerNames)
-            .filter(
-              (player) =>
-                Number(player) > teamASize
-            )
-            .map((player) => (
+          {teamBPlayers.map((player) => (
 
               <div
                 key={player}

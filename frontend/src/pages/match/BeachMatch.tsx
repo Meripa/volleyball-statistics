@@ -36,7 +36,7 @@ type Props = {
 }
 
 
-const BeachMatch = ({ game, }: Props) => {
+const BeachMatch = ({ game }: Props) => {
 
   // States
   const [layoutMode, setLayoutMode] = useState<
@@ -50,8 +50,8 @@ const BeachMatch = ({ game, }: Props) => {
   Record<string, string>
     >({
       ...generatePlayers(
-        game.teamASize,
-        game.teamBSize
+        game.teamASize || 2,
+        game.teamBSize || 2
       ),
 
       ...(game.playerNames || {}),
@@ -171,7 +171,9 @@ const BeachMatch = ({ game, }: Props) => {
 
   // Player order
   const playerOrder =
-    Object.keys(playerNames).map(Number)
+    Object.keys(playerNames)
+      .map(Number)
+      .sort((a, b) => a - b)
 
 
   // Handle stat click
@@ -268,7 +270,7 @@ const handleSaveMatch = async () => {
 
   if (!game?.id) return
 
-  await fetch(
+  const res = await fetch(
     `${API_URL}/games/${game.id}`,
     {
       method: "PATCH",
@@ -286,6 +288,11 @@ const handleSaveMatch = async () => {
       }),
     }
   )
+
+  if (!res.ok) {
+    alert("Save failed")
+    return
+  }
 
   alert("Match saved!")
 }
@@ -411,7 +418,7 @@ const handleSaveMatch = async () => {
       }
 
       const isTeamAPlayer =
-        last.player <= 2
+        last.player <= game.teamASize
 
       const isError =
         last.type.includes("Error")
@@ -553,6 +560,7 @@ const handleSaveMatch = async () => {
               playerNames={playerNames}
               selectedPlayer={selectedPlayer}
               stats={stats}
+              layoutMode={layoutMode}
               setSelectedPlayer={setSelectedPlayer}
             />
 

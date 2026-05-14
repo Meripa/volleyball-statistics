@@ -5,6 +5,7 @@ type Props = {
   playerNames: Record<string, string>
   selectedPlayer: number | null
   stats: any
+  layoutMode?: "vertical" | "horizontal"
   setSelectedPlayer: React.Dispatch<
     React.SetStateAction<number | null>
   >
@@ -15,10 +16,17 @@ const PlayerGrid = ({
   playerNames,
   selectedPlayer,
   stats,
+  layoutMode = "horizontal",
   setSelectedPlayer,
 }: Props) => {
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div
+      className={
+        layoutMode === "horizontal"
+          ? "grid grid-cols-2 gap-4 lg:grid-cols-4"
+          : "grid grid-cols-1 gap-4 sm:grid-cols-2"
+      }
+    >
       {playerOrder.map((player) => {
         const isTeamA = player <= 2
 

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 
 import type {
   Game,
@@ -6,6 +7,7 @@ import type {
   LogItem,
 } from "../../types/match"
 
+import { API_URL } from "../../components/Games"
 import MatchHeader from "../../components/match/MatchHeader"
 import ActionPanel from "../../components/match/ActionPanel"
 import RecentEvents from "../../components/match/RecentEvents"
@@ -72,6 +74,16 @@ const TrainingMatch = ({
       ...(game.stats || {}),
     })
 
+    const [setStatsData, setSetStatsData] =
+      useState<Record<number, any>>({
+        1: {},
+      })
+
+  const [selectedStatsView, setSelectedStatsView] =
+    useState<"match" | number>(
+      "match"
+    )
+
   const [log, setLog] =
     useState<LogItem[]>(
       game.log || []
@@ -120,20 +132,62 @@ const TrainingMatch = ({
     useState(false)
 
   const handleClick = (
-    
     player: number,
     type: string
   ) => {
     if (navigator.vibrate) {
       navigator.vibrate(40)
     }
-    const key = type + player
 
+    const key = type + player
     const totalPointsKey =
       "totalPoints" + player
-
     const plussesMinusesKey =
       "plussesMinuses" + player
+    const isTeamAPlayer =
+      player <= game.teamASize
+    const isError =
+      type.includes("Error")
+
+    setSetStatsData((prev) => {
+
+        const currentSetStats =
+          prev[stats.currentSet] || {}
+
+        const updatedSetStats = {
+
+          ...currentSetStats,
+
+          [key]:
+            (currentSetStats[key] || 0) + 1,
+        }
+        
+
+        if (!isError) {
+
+          updatedSetStats[totalPointsKey] =
+            (
+              currentSetStats[
+                totalPointsKey
+              ] || 0
+            ) + 1
+        }
+
+        updatedSetStats[plussesMinusesKey] =
+          (
+            currentSetStats[
+              plussesMinusesKey
+            ] || 0
+          ) + (isError ? -1 : 1)
+
+        return {
+
+          ...prev,
+
+          [stats.currentSet]:
+            updatedSetStats,
+        }
+      })
 
     setStats((prev) => {
 
@@ -143,12 +197,6 @@ const TrainingMatch = ({
         [key]:
           (prev[key] || 0) + 1,
       }
-
-      const isTeamAPlayer =
-        player <= game.teamASize
-
-      const isError =
-        type.includes("Error")
 
       if (isTeamAPlayer) {
 
@@ -380,6 +428,44 @@ const TrainingMatch = ({
     setLog((prev) =>
       prev.slice(0, -1)
     )
+    
+  }
+  const displayedStats =
+    selectedStatsView === "match"
+      ? stats
+      : {
+          scoreA: 0,
+          scoreB: 0,
+
+          ...(setStatsData[
+            selectedStatsView
+          ] || {}),
+        }
+
+  const handleSaveMatch = async () => {
+    const res = await fetch(
+      `${API_URL}/games/${game.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          scoreA: stats.scoreA,
+          scoreB: stats.scoreB,
+          stats,
+          log,
+          playerNames,
+        }),
+      }
+    )
+
+    if (!res.ok) {
+      alert("Save failed")
+      return
+    }
+
+    alert("Match saved!")
   }
 
   return (
@@ -410,10 +496,39 @@ const TrainingMatch = ({
           teamA={game.teamA}
           teamB={game.teamB}
         />
-        {/* Buttons below header */}
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
 
-        <div className="flex gap-3">
+        <Link
+          to="/games"
+          className="
+            rounded-xl
+            bg-slate-800
+            px-4
+            py-2
+            text-sm
+            font-bold
+            text-white
+            hover:bg-slate-700
+          "
+        >
+          Back to Games
+        </Link>
+
+        <button
+          onClick={handleSaveMatch}
+          className="
+            rounded-xl
+            bg-green-600
+            px-4
+            py-2
+            text-sm
+            font-bold
+            text-white
+            hover:bg-green-500
+          "
+        >
+          Save Match
+        </button>
 
         <button
           onClick={() =>
@@ -433,8 +548,8 @@ const TrainingMatch = ({
         >
           Edit Players
         </button>
-        </div>
-              <button
+
+        <button
           onClick={() => {
 
             if (
@@ -588,10 +703,80 @@ const TrainingMatch = ({
           </div>
 
         </div>
+      <div className="space-y-4">
+
+        <div className="flex flex-wrap gap-2">
+
+          <button
+            onClick={() =>
+              setSelectedStatsView(
+                "match"
+              )
+            }
+
+            className={`
+              rounded-xl
+              px-4
+              py-2
+              text-sm
+              font-bold
+
+              ${
+                selectedStatsView === "match"
+                  ? "bg-cyan-600 text-white"
+                  : "bg-slate-800 text-slate-300"
+              }
+            `}
+          >
+            Match
+          </button>
+
+          {Array.from({
+            length: stats.currentSet
+          }).map((_, index) => {
+
+            const setNumber =
+              index + 1
+
+            return (
+
+              <button
+                key={setNumber}
+
+                onClick={() =>
+                  setSelectedStatsView(
+                    setNumber
+                  )
+                }
+
+                className={`
+                  rounded-xl
+                  px-4
+                  py-2
+                  text-sm
+                  font-bold
+
+                  ${
+                    selectedStatsView ===
+                    setNumber
+                      ? "bg-cyan-600 text-white"
+                      : "bg-slate-800 text-slate-300"
+                  }
+                `}
+              >
+                Set {setNumber}
+              </button>
+            )
+          })}
+
+        </div>
+
         <StatTable
-          stats={stats}
+          stats={displayedStats}
           playerNames={playerNames}
         />
+
+      </div>
         <RecentEvents
           log={log}
           playerNames={playerNames}

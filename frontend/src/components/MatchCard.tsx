@@ -1,4 +1,4 @@
-import { Link} from "react-router-dom"
+import { Link } from "react-router-dom"
 
 type Props = {
   id: number
@@ -9,21 +9,23 @@ type Props = {
   date: string
   matchType: string
   playerNames?: Record<string, string>
-  onDelete: (id:number) => void
+  onDelete: (id: number) => void
 }
 
 const MatchCard = ({
-  id, 
-  teamA, 
-  teamB, 
-  scoreA, 
+  id,
+  teamA,
+  teamB,
+  scoreA,
   scoreB,
   playerNames,
   matchType,
-  date, 
-  onDelete 
+  date,
+  onDelete,
 }: Props) => {
+
   const handleDeleteClick = () => {
+
     const isConfirmed = window.confirm(
       `Are you sure you want to delete ${teamAPlayers} vs ${teamBPlayers}?`
     )
@@ -32,71 +34,278 @@ const MatchCard = ({
 
     onDelete(id)
   }
-  
+  const hasPlayerNames =
+    playerNames &&
+    Object.keys(playerNames).length > 0
+
   const teamAPlayers =
-    playerNames
-      ? `${playerNames["1"] || "Player 1"} / ${playerNames["2"] || "Player 2"}`
+    hasPlayerNames
+      ? Object.keys(playerNames)
+          .filter(
+            (player) =>
+              Number(player) <=
+              Object.keys(playerNames).length / 2
+          )
+          .map(
+            (player) =>
+              playerNames[player]
+          )
+          .join(" / ")
       : teamA
 
   const teamBPlayers =
-    playerNames
-      ? `${playerNames["3"] || "Player 3"} / ${playerNames["4"] || "Player 4"}`
+    hasPlayerNames
+      ? Object.keys(playerNames)
+          .filter(
+            (player) =>
+              Number(player) >
+              Object.keys(playerNames).length / 2
+          )
+          .map(
+            (player) =>
+              playerNames[player]
+          )
+          .join(" / ")
       : teamB
 
-
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl transition hover:-translate-y-1 hover:border-slate-700">
-      <div className="mb-5 flex items-center justify-between">
-        <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-300">
-          {
-            matchType === "training"
-              ? "Training Match"
-              : "Beach Volley"
-          }
-        </span>
 
-        <span className="text-xs text-slate-500">{date}</span>
-      </div>
+    <div
+      className="
+        rounded-3xl
+        border
+        border-slate-800
+        bg-slate-900/70
+        px-6
+        py-5
+        shadow-xl
+        transition
+        hover:border-slate-700
+      "
+    >
 
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
-        <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wide text-slate-500">
-            Team A
+      <div
+        className="
+          flex
+          flex-col
+          gap-6
+          xl:flex-row
+          xl:items-center
+        "
+      >
+
+        {/* LEFT */}
+        <div
+          className="
+            flex
+            min-w-[180px]
+            items-center
+            justify-between
+            xl:flex-col
+            xl:items-start
+            xl:justify-center
+            xl:gap-3
+          "
+        >
+
+          <span
+            className="
+              w-fit
+              rounded-full
+              bg-slate-800
+              px-3
+              py-1
+              text-xs
+              font-semibold
+              text-slate-200
+            "
+          >
+            {
+              matchType === "training"
+                ? "Training Match"
+                : "Beach Volley"
+            }
+          </span>
+
+          <p
+            className="
+              text-sm
+              text-slate-500
+            "
+          >
+            {date}
           </p>
-          <h2 className="mt-1 wrap-break-words text-base font-bold leading-tight text-white sm:text-lg">
-            {teamAPlayers}
-          </h2>
+
         </div>
 
-        <div className="w-28 rounded-2xl bg-slate-950 px-3 py-3 text-center shadow-inner">
-          <p className="whitespace-nowrap text-2xl font-black tabular-nums text-white sm:text-3xl">
-            {scoreA} : {scoreB}
-          </p>
+        {/* CENTER */}
+        <div
+          className="
+            flex
+            flex-1
+            flex-col
+            items-center
+            gap-6
+            xl:flex-row
+            xl:justify-between
+          "
+        >
+
+          {/* TEAM A */}
+          <div
+            className="
+              w-full
+              xl:max-w-[300px]
+            "
+          >
+
+            <p
+              className="
+                text-xs
+                uppercase
+                tracking-wide
+                text-slate-500
+              "
+            >
+              Team A
+            </p>
+
+            <h2
+              className="
+                mt-1
+                break-words
+                text-xl
+                font-bold
+                leading-tight
+                text-white
+              "
+            >
+              {teamAPlayers}
+            </h2>
+
+          </div>
+
+          {/* SCORE */}
+          <div
+            className="
+              rounded-2xl
+              bg-black/40
+              px-8
+              py-4
+              text-center
+              shadow-inner
+            "
+          >
+
+            <p
+              className="
+                whitespace-nowrap
+                text-4xl
+                font-black
+                tracking-tight
+                text-white
+              "
+            >
+              {scoreA}
+
+              <span className="mx-2 text-slate-500">
+                :
+              </span>
+
+              {scoreB}
+            </p>
+
+          </div>
+
+          {/* TEAM B */}
+          <div
+            className="
+              w-full
+              text-left
+              xl:max-w-[300px]
+              xl:text-right
+            "
+          >
+
+            <p
+              className="
+                text-xs
+                uppercase
+                tracking-wide
+                text-slate-500
+              "
+            >
+              Team B
+            </p>
+
+            <h2
+              className="
+                mt-1
+                break-words
+                text-xl
+                font-bold
+                leading-tight
+                text-white
+              "
+            >
+              {teamBPlayers}
+            </h2>
+
+          </div>
+
         </div>
 
-        <div className="min-w-0 text-right">
-          <p className="text-xs uppercase tracking-wide text-slate-500">
-            Team B
-          </p>
-          <h2 className="mt-1 wrap-break-words text-base font-bold leading-tight text-white sm:text-lg">
-            {teamBPlayers}
-          </h2>
+        {/* ACTIONS */}
+        <div
+          className="
+            flex
+            gap-3
+          "
+        >
+
+          <Link
+            to={`/games/${id}`}
+
+            className="
+              rounded-2xl
+              border
+              border-slate-700
+              px-5
+              py-3
+              text-sm
+              font-bold
+              text-white
+              transition
+              hover:border-blue-500
+              hover:bg-blue-500/10
+            "
+          >
+            Open
+          </Link>
+
+          <button
+            onClick={handleDeleteClick}
+
+            className="
+              rounded-2xl
+              border
+              border-red-500/20
+              px-5
+              py-3
+              text-sm
+              font-bold
+              text-red-400
+              transition
+              hover:bg-red-500/10
+            "
+          >
+            Delete
+          </button>
+
         </div>
+
       </div>
 
-      <div className="mt-6 flex gap-2">
-        <Link
-        to={`/games/${id}`}
-        className="flex-1 rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-700">
-          Open
-        </Link>
-
-        <button
-          onClick = {handleDeleteClick}
-         className="rounded-xl bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/20">
-          Delete
-        </button>
-      </div>
     </div>
   )
 }
