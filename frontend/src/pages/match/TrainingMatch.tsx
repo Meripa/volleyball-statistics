@@ -92,13 +92,41 @@ const TrainingMatch = ({
         (player) =>
           player > game.teamASize
       )
+
+  const TARGET_SCORE = 25
+  const checkSetWinner = (
+  scoreA: number,
+  scoreB: number
+  ) => {
+
+    const target = TARGET_SCORE
+
+    const hasTeamAWon =
+      scoreA >= target &&
+      scoreA - scoreB >= 2
+
+    const hasTeamBWon =
+      scoreB >= target &&
+      scoreB - scoreA >= 2
+
+    if (!hasTeamAWon && !hasTeamBWon)
+      return null
+
+    return hasTeamAWon
+      ? "A"
+      : "B"
+  }
   const [showPlayerEditor, setShowPlayerEditor] =
     useState(false)
+
   const handleClick = (
+    
     player: number,
     type: string
   ) => {
-
+    if (navigator.vibrate) {
+      navigator.vibrate(40)
+    }
     const key = type + player
 
     const totalPointsKey =
@@ -166,7 +194,20 @@ const TrainingMatch = ({
             (prev[plussesMinusesKey] || 0) + 1
         }
       }
+      const winner = checkSetWinner(
+          newStats.scoreA,
+          newStats.scoreB
+        )
 
+        if (winner) {
+
+          setPendingSetWinner(winner)
+
+          setPendingSetScore({
+            scoreA: newStats.scoreA,
+            scoreB: newStats.scoreB,
+          })
+        }
       return newStats
     })
 
@@ -176,6 +217,54 @@ const TrainingMatch = ({
     ])
   }
 
+  const [pendingSetWinner, setPendingSetWinner] =
+   useState<"A" | "B" | null>(null)
+
+  const [pendingSetScore, setPendingSetScore] =
+    useState({
+      scoreA: 0,
+      scoreB: 0,
+    })
+    const handleConfirmSet = () => {
+
+  if (!pendingSetWinner) return
+
+  setStats((prev) => {
+
+    const newStats = {
+      ...prev,
+    }
+
+    if (pendingSetWinner === "A") {
+
+      newStats.setsWonA =
+        (prev.setsWonA || 0) + 1
+
+    } else {
+
+      newStats.setsWonB =
+        (prev.setsWonB || 0) + 1
+    }
+
+    newStats.setHistory = [
+      ...(prev.setHistory || []),
+
+      {
+        scoreA: prev.scoreA,
+        scoreB: prev.scoreB,
+      },
+    ]
+
+    newStats.currentSet += 1
+
+    newStats.scoreA = 0
+    newStats.scoreB = 0
+
+    return newStats
+  })
+
+  setPendingSetWinner(null)
+}
   const handleUndo = () => {
 
     const last =
@@ -186,15 +275,107 @@ const TrainingMatch = ({
     const key =
       last.type + last.player
 
-    setStats((prev) => ({
+    const totalPointsKey =
+      "totalPoints" + last.player
 
-      ...prev,
+    const plussesMinusesKey =
+      "plussesMinuses" + last.player
 
-      [key]: Math.max(
-        (prev[key] || 0) - 1,
-        0
-      ),
-    }))
+    setStats((prev) => {
+
+      const newStats = {
+
+        ...prev,
+
+        [key]: Math.max(
+          (prev[key] || 0) - 1,
+          0
+        ),
+      }
+
+      const isTeamAPlayer =
+        last.player <= game.teamASize
+
+      const isError =
+        last.type.includes("Error")
+
+      if (isTeamAPlayer) {
+
+        if (isError) {
+
+          newStats.scoreB =
+            Math.max(
+              prev.scoreB - 1,
+              0
+            )
+
+          newStats[plussesMinusesKey] =
+            (prev[
+              plussesMinusesKey
+            ] || 0) + 1
+
+        } else {
+
+          newStats.scoreA =
+            Math.max(
+              prev.scoreA - 1,
+              0
+            )
+
+          newStats[totalPointsKey] =
+            Math.max(
+              (prev[
+                totalPointsKey
+              ] || 0) - 1,
+              0
+            )
+
+          newStats[plussesMinusesKey] =
+            (prev[
+              plussesMinusesKey
+            ] || 0) - 1
+        }
+
+      } else {
+
+        if (isError) {
+
+          newStats.scoreA =
+            Math.max(
+              prev.scoreA - 1,
+              0
+            )
+
+          newStats[plussesMinusesKey] =
+            (prev[
+              plussesMinusesKey
+            ] || 0) + 1
+
+        } else {
+
+          newStats.scoreB =
+            Math.max(
+              prev.scoreB - 1,
+              0
+            )
+
+          newStats[totalPointsKey] =
+            Math.max(
+              (prev[
+                totalPointsKey
+              ] || 0) - 1,
+              0
+            )
+
+          newStats[plussesMinusesKey] =
+            (prev[
+              plussesMinusesKey
+            ] || 0) - 1
+        }
+      }
+
+      return newStats
+    })
 
     setLog((prev) =>
       prev.slice(0, -1)
@@ -204,7 +385,7 @@ const TrainingMatch = ({
   return (
     <div className="
       min-h-screen
-      bg-gradient-to-br
+      bg-linear-to-br
       from-slate-950
       via-slate-900
       to-black
@@ -229,6 +410,9 @@ const TrainingMatch = ({
           teamA={game.teamA}
           teamB={game.teamB}
         />
+        {/* Buttons below header */}
+        <div className="flex gap-3">
+
         <div className="flex gap-3">
 
         <button
@@ -249,7 +433,41 @@ const TrainingMatch = ({
         >
           Edit Players
         </button>
+        </div>
+              <button
+          onClick={() => {
 
+            if (
+              stats.scoreA === 0 &&
+              stats.scoreB === 0
+            ) return
+
+            const winner =
+              stats.scoreA > stats.scoreB
+                ? "A"
+                : "B"
+
+            setPendingSetWinner(winner)
+
+            setPendingSetScore({
+              scoreA: stats.scoreA,
+              scoreB: stats.scoreB,
+            })
+          }}
+
+          className="
+            rounded-xl
+            bg-orange-600
+            px-4
+            py-2
+            text-sm
+            font-bold
+            text-white
+            hover:bg-orange-500
+          "
+        >
+          End Set
+        </button>
       </div>
 
         <div className="
@@ -308,6 +526,7 @@ const TrainingMatch = ({
 
             </div>
           </div>
+        
 
           {/* ACTIONS */}
           <ActionPanel
@@ -380,9 +599,102 @@ const TrainingMatch = ({
         />
 
       </div>
+      {pendingSetWinner && (
+
+            <div className="
+              fixed
+              inset-0
+              z-50
+              flex
+              items-center
+              justify-center
+              bg-black/70
+              p-4
+            ">
+
+              <div className="
+                w-full
+                max-w-md
+                rounded-2xl
+                bg-slate-900
+                p-6
+                shadow-2xl
+              ">
+
+                <h2 className="
+                  text-2xl
+                  font-bold
+                  text-white
+                ">
+                  End Set?
+                </h2>
+
+                <p className="
+                  mt-3
+                  text-slate-300
+                ">
+                  Final score:
+
+                  {" "}
+
+                  {pendingSetScore.scoreA}
+
+                  {" - "}
+
+                  {pendingSetScore.scoreB}
+                </p>
+
+                <div className="
+                  mt-6
+                  flex
+                  gap-3
+                ">
+
+                  <button
+                    onClick={handleConfirmSet}
+
+                    className="
+                      flex-1
+                      rounded-xl
+                      bg-green-600
+                      px-4
+                      py-3
+                      font-bold
+                      text-white
+                      hover:bg-green-500
+                    "
+                  >
+                    Confirm
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      setPendingSetWinner(null)
+                    }
+
+                    className="
+                      flex-1
+                      rounded-xl
+                      bg-slate-700
+                      px-4
+                      py-3
+                      font-bold
+                      text-white
+                      hover:bg-slate-600
+                    "
+                  >
+                    Cancel
+                  </button>
+
+                </div>
+              </div>
+            </div>
+          )}
       <PlayerEditorModal
           open={showPlayerEditor}
           playerNames={playerNames}
+          teamASize={game.teamASize}
+          teamBSize={game.teamBSize}
           setPlayerNames={setPlayerNames}
           onClose={() =>
             setShowPlayerEditor(false)

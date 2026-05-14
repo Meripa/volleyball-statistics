@@ -7,6 +7,7 @@ type Props = {
   scoreA: number
   scoreB: number
   date: string
+  matchType: string
   playerNames?: Record<string, string>
   onDelete: (id:number) => void
 }
@@ -18,6 +19,7 @@ const MatchCard = ({
   scoreA, 
   scoreB,
   playerNames,
+  matchType,
   date, 
   onDelete 
 }: Props) => {
@@ -46,7 +48,11 @@ const MatchCard = ({
     <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl transition hover:-translate-y-1 hover:border-slate-700">
       <div className="mb-5 flex items-center justify-between">
         <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-300">
-          Beach Volley
+          {
+            matchType === "training"
+              ? "Training Match"
+              : "Beach Volley"
+          }
         </span>
 
         <span className="text-xs text-slate-500">{date}</span>

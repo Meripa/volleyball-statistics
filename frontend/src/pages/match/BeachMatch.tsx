@@ -179,7 +179,9 @@ const BeachMatch = ({ game, }: Props) => {
     player: number,
     type: string
   ) => {
-
+    if (navigator.vibrate) {
+      navigator.vibrate(40)
+    }
     const key = type + player
     const totalPointsKey = "totalPoints" + player
     const plussesMinusesKey =
@@ -611,6 +613,8 @@ const handleSaveMatch = async () => {
         <PlayerEditorModal
           open={showPlayerEditor}
           playerNames={playerNames}
+          teamASize={game.teamASize}
+          teamBSize={game.teamBSize}
           setPlayerNames={setPlayerNames}
           onClose={() => setShowPlayerEditor(false)}
         />

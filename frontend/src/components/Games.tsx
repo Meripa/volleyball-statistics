@@ -119,7 +119,8 @@ const Games = () => {
           )}
           {games.map((game) => (
             <MatchCard key={game.id}
-            {...game} 
+            {...game}
+            matchType={game.matchType}
             onDelete={handleDeleteGame}
             />
           ))}

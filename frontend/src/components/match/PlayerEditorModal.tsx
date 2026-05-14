@@ -3,6 +3,9 @@ type Props = {
 
   playerNames: Record<string, string>
 
+  teamASize: number
+  teamBSize: number
+
   setPlayerNames: React.Dispatch<
     React.SetStateAction<Record<string, string>>
   >
@@ -14,6 +17,7 @@ const PlayerEditorModal = ({
   open,
   playerNames,
   setPlayerNames,
+  teamASize,
   onClose,
 }: Props) => {
 
@@ -64,52 +68,145 @@ const PlayerEditorModal = ({
         </div>
 
         {/* Inputs */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-6">
 
-          {["1", "2", "3", "4"].map((player) => (
+        {/* TEAM A */}
+        <div className="space-y-3">
 
-            <label
-              key={player}
-              className="space-y-2"
-            >
+          <h2 className="
+            text-sm
+            font-bold
+            uppercase
+            tracking-wide
+            text-cyan-400
+          ">
+            Team A
+          </h2>
 
-              <span className="text-sm text-slate-400">
-                Player {player}
-              </span>
+          {Object.keys(playerNames)
+            .filter(
+              (player) =>
+                Number(player) <= teamASize
+            )
+            .map((player) => (
 
-              <input
-                value={playerNames[player] || ""}
+              <div
+                key={player}
+                className="space-y-1"
+              >
 
-                onChange={(event) =>
-                  setPlayerNames((prev) => ({
-                    ...prev,
-                    [player]: event.target.value,
-                  }))
-                }
+                <label className="
+                  text-sm
+                  text-slate-400
+                ">
+                  Player {player}
+                </label>
 
-                maxLength={20}
+                <input
+                  type="text"
 
-                className="
-                  w-full
-                  rounded-xl
-                  border
-                  border-slate-700
-                  bg-slate-950
-                  px-4
-                  py-3
-                  text-white
-                  outline-none
-                  focus:border-cyan-500
-                "
+                  value={
+                    playerNames[player]
+                  }
 
-                placeholder={`Player ${player}`}
-              />
+                  onChange={(e) =>
+                    setPlayerNames((prev) => ({
+                      ...prev,
 
-            </label>
+                      [player]:
+                        e.target.value,
+                    }))
+                  }
+
+                  className="
+                    w-full
+                    rounded-xl
+                    border
+                    border-slate-700
+                    bg-slate-950
+                    px-4
+                    py-3
+                    text-white
+                    outline-none
+                    focus:border-cyan-500
+                  "
+                />
+
+              </div>
 
           ))}
 
         </div>
+
+        {/* TEAM B */}
+        <div className="space-y-3">
+
+          <h2 className="
+            text-sm
+            font-bold
+            uppercase
+            tracking-wide
+            text-pink-400
+          ">
+            Team B
+          </h2>
+
+          {Object.keys(playerNames)
+            .filter(
+              (player) =>
+                Number(player) > teamASize
+            )
+            .map((player) => (
+
+              <div
+                key={player}
+                className="space-y-1"
+              >
+
+                <label className="
+                  text-sm
+                  text-slate-400
+                ">
+                  Player {player}
+                </label>
+
+                <input
+                  type="text"
+
+                  value={
+                    playerNames[player]
+                  }
+
+                  onChange={(e) =>
+                    setPlayerNames((prev) => ({
+                      ...prev,
+
+                      [player]:
+                        e.target.value,
+                    }))
+                  }
+
+                  className="
+                    w-full
+                    rounded-xl
+                    border
+                    border-slate-700
+                    bg-slate-950
+                    px-4
+                    py-3
+                    text-white
+                    outline-none
+                    focus:border-cyan-500
+                  "
+                />
+
+              </div>
+
+          ))}
+
+        </div>
+
+      </div>
 
       </div>
     </div>
