@@ -108,21 +108,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      <nav
-        className="
-          fixed
-          inset-x-0
-          bottom-0
-          z-50
-          border-t
-          border-slate-800
-          bg-slate-950/95
-          px-3
-          py-2
-          backdrop-blur
-          md:hidden
-        "
-      >
+      <nav className="border-b border-slate-800 bg-slate-950 px-3 py-2 md:hidden">
         <div className="mx-auto flex max-w-md items-center gap-2">
           <Link to="/" className={navItemClass("/")}>
             <span className="text-base leading-none">⌂</span>
