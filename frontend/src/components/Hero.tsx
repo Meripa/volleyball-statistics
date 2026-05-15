@@ -197,6 +197,13 @@ const Hero = () => {
             <h2 className="mt-3 text-3xl font-black">
               From first serve to match report.
             </h2>
+
+            <Link
+              to="/how-it-works"
+              className="mt-5 inline-flex rounded-xl border border-slate-700 px-4 py-2 text-sm font-black text-white hover:border-cyan-300"
+            >
+              View full guide
+            </Link>
           </div>
 
           <div className="mt-8 grid gap-5 md:grid-cols-3">

@@ -6,6 +6,7 @@ import {
   Navigate
 } from 'react-router-dom'
 import {
+  AuthenticateWithRedirectCallback,
   SignedIn,
   SignedOut
 } from '@clerk/clerk-react'
@@ -17,6 +18,7 @@ import MatchPage from './pages/MatchPage'
 import GamesPage from './pages/GamesPage'
 import AdminGamesPage from './pages/AdminGamesPage'
 import DemoPage from './pages/DemoPage'
+import HowItWorksPage from './pages/HowItWorksPage'
 
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -32,7 +34,14 @@ const router = createBrowserRouter(
 
       <Route path='login' element={<LoginPage />} />
       <Route path='register' element={<RegisterPage />} />
+      <Route
+        path='sso-callback'
+        element={
+          <AuthenticateWithRedirectCallback />
+        }
+      />
       <Route path='demo' element={<DemoPage />} />
+      <Route path='how-it-works' element={<HowItWorksPage />} />
 
       {/* PROTECTED ROUTES */}
       <Route

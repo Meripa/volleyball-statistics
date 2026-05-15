@@ -74,6 +74,13 @@ const Navbar = () => {
                 Demo
               </Link>
 
+              <Link 
+                to="/how-it-works" 
+                className={`font-medium transition-colors hover:text-white ${isActive('/how-it-works') ? 'text-white' : 'text-slate-400'}`}
+              >
+                How it works
+              </Link>
+
               <SignedIn>
                 <Link
                   to="/admin/games"
@@ -123,6 +130,11 @@ const Navbar = () => {
           <Link to="/demo" className={navItemClass("/demo")}>
             <span className="text-base leading-none">▶</span>
             Demo
+          </Link>
+
+          <Link to="/how-it-works" className={navItemClass("/how-it-works")}>
+            <span className="text-base leading-none">?</span>
+            Guide
           </Link>
 
           <SignedOut>
