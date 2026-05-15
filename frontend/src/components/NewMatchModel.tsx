@@ -21,6 +21,9 @@ type Props = {
 
 const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
     const today = new Date().toISOString().split("T")[0]
+    const earliestDate = new Date()
+    earliestDate.setFullYear(earliestDate.getFullYear() - 1)
+    const minDate = earliestDate.toISOString().split("T")[0]
     const [teamA, setTeamA] = useState("")
     const [teamB, setTeamB] = useState("")
     const [date, setDate] = useState(today)
@@ -35,6 +38,11 @@ const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
 
       if (!teamA.trim() || !teamB.trim())
         return
+
+      if (date < minDate || date > today) {
+        alert("Please choose a valid match date.")
+        return
+      }
 
       try {
 
@@ -125,7 +133,7 @@ const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
           </div>
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-300">
-              Team A
+              Match date
             </label>
             
             <input
@@ -133,8 +141,13 @@ const NewMatchModal = ({ onClose, onCreateGame }: Props) => {
               
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              min={minDate}
+              max={today}
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-blue-500"
             />
+            <span className="mt-1 block text-xs text-slate-500">
+              Choose a date from the last 12 months.
+            </span>
           </div>
           {/* Match Type and player count */}
           <div className="space-y-2">
