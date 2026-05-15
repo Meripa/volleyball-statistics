@@ -22,6 +22,22 @@ const Games = () => {
     const [games, setGames] = useState<Game[]>([])
     const [showModel, setShowModel] = useState(false)
 
+    const clerkUserHeaders = () => {
+        const displayName =
+            user?.fullName ||
+            user?.username ||
+            user?.primaryEmailAddress?.emailAddress ||
+            ""
+
+        const email =
+            user?.primaryEmailAddress?.emailAddress ||
+            ""
+
+        return {
+            "X-User-Name": encodeURIComponent(displayName),
+            "X-User-Email": encodeURIComponent(email),
+        }
+    }
 
     const handleCreateGame = async (newGame: NewGameData) => {
         const token = await getToken()
@@ -30,6 +46,7 @@ const Games = () => {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
+                ...clerkUserHeaders(),
             },
             body: JSON.stringify({
                 ...newGame,
@@ -53,6 +70,7 @@ const Games = () => {
             method: "Delete",
             headers: {
               Authorization: `Bearer ${token}`,
+              ...clerkUserHeaders(),
             },
         })
         setGames((prev) => prev.filter((game) => game.id !== id))
@@ -70,6 +88,7 @@ const Games = () => {
             const res = await fetch(`${API_URL}/games`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
+                    ...clerkUserHeaders(),
                 },
             })
 
@@ -96,7 +115,7 @@ const Games = () => {
         return () => {
           isMounted = false
         }
-    }, [getToken])
+    }, [getToken, user])
 
     if (loading) {
   return (

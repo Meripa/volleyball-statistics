@@ -12,6 +12,16 @@ const PORT = process.env.PORT || 5000
 app.use(cors())
 app.use(express.json())
 
+const decodeHeaderValue = (value) => {
+  if (!value) return null
+
+  try {
+    return decodeURIComponent(value)
+  } catch (error) {
+    return value
+  }
+}
+
 let clerkJwksCache = null
 let clerkJwksFetchedAt = 0
 
@@ -82,11 +92,32 @@ const authRequired = async (req, res, next) => {
       userId: verified.sub,
     }
 
+    const displayName =
+      decodeHeaderValue(req.headers["x-user-name"]) ||
+      verified.name ||
+      null
+
+    const email =
+      decodeHeaderValue(req.headers["x-user-email"]) ||
+      verified.email ||
+      null
+
     await pool.query(
-      `INSERT INTO app_users (clerk_user_id)
-       VALUES ($1)
-       ON CONFLICT (clerk_user_id) DO NOTHING`,
-      [req.auth.userId]
+      `INSERT INTO app_users (
+        clerk_user_id,
+        display_name,
+        email
+      )
+       VALUES ($1, $2, $3)
+       ON CONFLICT (clerk_user_id)
+       DO UPDATE SET
+         display_name = COALESCE(EXCLUDED.display_name, app_users.display_name),
+         email = COALESCE(EXCLUDED.email, app_users.email)`,
+      [
+        req.auth.userId,
+        displayName,
+        email,
+      ]
     )
 
     next()
@@ -153,9 +184,21 @@ const initDb = async () => {
     CREATE TABLE IF NOT EXISTS app_users (
       id SERIAL PRIMARY KEY,
       clerk_user_id TEXT UNIQUE NOT NULL,
+      display_name TEXT,
+      email TEXT,
       is_admin BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     )
+  `)
+
+  await pool.query(`
+    ALTER TABLE app_users
+    ADD COLUMN IF NOT EXISTS display_name TEXT
+  `)
+
+  await pool.query(`
+    ALTER TABLE app_users
+    ADD COLUMN IF NOT EXISTS email TEXT
   `)
 
   await pool.query(`
