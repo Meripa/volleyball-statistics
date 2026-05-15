@@ -14,6 +14,8 @@ export type Stats = {
     scoreA: number
     scoreB: number
   }[]
+
+  setStatsData?: Record<number, Record<string, number>>
 }
 
 export type MatchType =
@@ -36,6 +38,8 @@ export type Game = {
   teamB: string
 
   date: string
+  createdByName?: string | null
+  createdByEmail?: string | null
 
   scoreA: number
   scoreB: number

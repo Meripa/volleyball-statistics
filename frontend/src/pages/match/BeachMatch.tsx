@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useAuth } from "@clerk/clerk-react"
 import { Link } from "react-router-dom"
 
 
@@ -37,6 +38,7 @@ type Props = {
 
 
 const BeachMatch = ({ game }: Props) => {
+  const { getToken } = useAuth()
 
   // States
   const [layoutMode, setLayoutMode] = useState<
@@ -75,6 +77,7 @@ const BeachMatch = ({ game }: Props) => {
   const [setStatsData, setSetStatsData] =
     useState<Record<number, any>>({
       1: {},
+      ...(game.stats?.setStatsData || {}),
     })
 
   const [selectedStatsView, setSelectedStatsView] =
@@ -88,61 +91,104 @@ const BeachMatch = ({ game }: Props) => {
     scoreA: 0,
     scoreB: 0,
   })
+
+  const saveMatchData = async (
+    nextStats: Stats,
+    showSuccess = true
+  ) => {
+
+    if (!game?.id) return false
+    const token = await getToken()
+
+    const res = await fetch(
+      `${API_URL}/games/${game.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type":
+            "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({
+          scoreA: nextStats.scoreA,
+          scoreB: nextStats.scoreB,
+          stats: {
+            ...nextStats,
+            setStatsData,
+          },
+          log,
+          playerNames,
+        }),
+      }
+    )
+
+    if (!res.ok) {
+      alert("Save failed")
+      return false
+    }
+
+    if (showSuccess) {
+      alert("Match saved!")
+    }
+
+    return true
+  }
   
   // Confirm set win
 
-  const handleConfirmSet = () => {
+  const handleConfirmSet = async () => {
 
   if (!pendingSetWinner) return
 
-  setStats((prev) => {
+  const newStats = { ...stats }
 
-    const newStats = { ...prev }
+  if (pendingSetWinner === "A") {
 
-    if (pendingSetWinner === "A") {
+    newStats.setsWonA =
+      (stats.setsWonA || 0) + 1
 
-      newStats.setsWonA =
-        (prev.setsWonA || 0) + 1
+    if (newStats.setsWonA === 2) {
 
-      if (newStats.setsWonA === 2) {
+      alert(`${game?.teamA} wins match!`)
 
-        alert(`${game?.teamA} wins match!`)
+    } else {
 
-      } else {
-
-        newStats.currentSet += 1
-        newStats.scoreA = 0
-        newStats.scoreB = 0
-      }
+      newStats.currentSet += 1
+      newStats.scoreA = 0
+      newStats.scoreB = 0
     }
+  }
 
-    if (pendingSetWinner === "B") {
+  if (pendingSetWinner === "B") {
 
-      newStats.setsWonB =
-        (prev.setsWonB || 0) + 1
+    newStats.setsWonB =
+      (stats.setsWonB || 0) + 1
 
-      if (newStats.setsWonB === 2) {
+    if (newStats.setsWonB === 2) {
 
-        alert(`${game?.teamB} wins match!`)
+      alert(`${game?.teamB} wins match!`)
 
-      } else {
+    } else {
 
-        newStats.currentSet += 1
-        newStats.scoreA = 0
-        newStats.scoreB = 0
-      }
+      newStats.currentSet += 1
+      newStats.scoreA = 0
+      newStats.scoreB = 0
     }
-    newStats.setHistory = [
-   ...(prev.setHistory || []),
-      {
-        scoreA: prev.scoreA,
-        scoreB: prev.scoreB,
-      },
-    ]
-    return newStats
-  })
+  }
+
+  newStats.setHistory = [
+    ...(stats.setHistory || []),
+    {
+      scoreA: stats.scoreA,
+      scoreB: stats.scoreB,
+    },
+  ]
+
+  setStats(newStats)
 
   setPendingSetWinner(null)
+  await saveMatchData(newStats, false)
 }
 
   const getTargetScore = () => {
@@ -299,34 +345,7 @@ const BeachMatch = ({ game }: Props) => {
   }
   // Save
 const handleSaveMatch = async () => {
-
-  if (!game?.id) return
-
-  const res = await fetch(
-    `${API_URL}/games/${game.id}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-
-      body: JSON.stringify({
-        scoreA: stats.scoreA,
-        scoreB: stats.scoreB,
-        stats,
-        log,
-        playerNames,
-      }),
-    }
-  )
-
-  if (!res.ok) {
-    alert("Save failed")
-    return
-  }
-
-  alert("Match saved!")
+  await saveMatchData(stats)
 }
   
   const handleDownloadPdf = () => {

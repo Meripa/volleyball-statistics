@@ -3,6 +3,7 @@ const cors = require("cors")
 const pool = require("./db")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const crypto = require("crypto")
 require("dotenv").config()
 
 const app = express()
@@ -10,6 +11,82 @@ const PORT = process.env.PORT || 5000
 
 app.use(cors())
 app.use(express.json())
+
+let clerkJwksCache = null
+let clerkJwksFetchedAt = 0
+
+const getClerkSigningKey = async (issuer, kid) => {
+  const cacheMaxAgeMs = 60 * 60 * 1000
+
+  if (
+    !clerkJwksCache ||
+    Date.now() - clerkJwksFetchedAt > cacheMaxAgeMs
+  ) {
+    const response = await fetch(`${issuer}/.well-known/jwks.json`)
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch Clerk JWKS")
+    }
+
+    clerkJwksCache = await response.json()
+    clerkJwksFetchedAt = Date.now()
+  }
+
+  const jwk = clerkJwksCache.keys.find(
+    (key) => key.kid === kid
+  )
+
+  if (!jwk) {
+    throw new Error("Clerk signing key not found")
+  }
+
+  return crypto.createPublicKey({
+    key: jwk,
+    format: "jwk",
+  })
+}
+
+const authRequired = async (req, res, next) => {
+  const authHeader = req.headers.authorization || ""
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : null
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" })
+  }
+
+  try {
+    const decoded = jwt.decode(token, {
+      complete: true,
+    })
+
+    if (!decoded?.header?.kid || !decoded?.payload?.iss) {
+      return res.status(401).json({ message: "Invalid token" })
+    }
+
+    const issuer = decoded.payload.iss
+    const expectedIssuer = process.env.CLERK_ISSUER || issuer
+
+    const signingKey = await getClerkSigningKey(
+      expectedIssuer,
+      decoded.header.kid
+    )
+
+    const verified = jwt.verify(token, signingKey, {
+      algorithms: ["RS256"],
+      issuer: expectedIssuer,
+    })
+
+    req.auth = {
+      userId: verified.sub,
+    }
+
+    next()
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid token" })
+  }
+}
 
 const mapGame = (row) => ({
   id: row.id,
@@ -19,6 +96,8 @@ const mapGame = (row) => ({
   teamA: row.teama,
   teamB: row.teamb,
   date: row.date,
+  createdByName: row.createdbyname,
+  createdByEmail: row.createdbyemail,
   scoreA: row.scorea,
   scoreB: row.scoreb,
 
@@ -69,6 +148,21 @@ const initDb = async () => {
 
   await pool.query(`
     ALTER TABLE games
+    ADD COLUMN IF NOT EXISTS clerk_user_id TEXT
+  `)
+
+  await pool.query(`
+    ALTER TABLE games
+    ADD COLUMN IF NOT EXISTS createdbyname TEXT
+  `)
+
+  await pool.query(`
+    ALTER TABLE games
+    ADD COLUMN IF NOT EXISTS createdbyemail TEXT
+  `)
+
+  await pool.query(`
+    ALTER TABLE games
     ADD COLUMN IF NOT EXISTS playernames JSONB NOT NULL DEFAULT '{}'::jsonb
   `)
   await pool.query(`
@@ -88,16 +182,31 @@ const initDb = async () => {
 }
 
 
-app.get("/games", async (req,res) => {
-  const result = await pool.query("SELECT * FROM games ORDER BY id DESC")
+app.get("/games", authRequired, async (req,res) => {
+  const result = await pool.query(
+    "SELECT * FROM games WHERE clerk_user_id = $1 ORDER BY id DESC",
+    [req.auth.userId]
+  )
     res.json(result.rows.map(mapGame))
 })
 
-app.post("/games", async (req,res) => {
-    const { teamA, teamB, date, matchType, teamASize, teamBSize} = req.body
+app.post("/games", authRequired, async (req,res) => {
+    const {
+      teamA,
+      teamB,
+      date,
+      matchType,
+      teamASize,
+      teamBSize,
+      createdByName,
+      createdByEmail,
+    } = req.body
 
     const result = await pool.query(
       `INSERT INTO games (
+        clerk_user_id,
+        createdbyname,
+        createdbyemail,
         matchtype,
         teamasize,
         teambsize,
@@ -105,9 +214,19 @@ app.post("/games", async (req,res) => {
         teamb,
         date
       )
-      VALUES ($1, $2, $3, $4, $5, $6)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *`,
-      [matchType || "beach", teamASize || 2, teamBSize || 2, teamA, teamB, date]
+      [
+        req.auth.userId,
+        createdByName || null,
+        createdByEmail || null,
+        matchType || "beach",
+        teamASize || 2,
+        teamBSize || 2,
+        teamA,
+        teamB,
+        date,
+      ]
     )
 
     res.status(201).json(mapGame(result.rows[0]))
@@ -236,12 +355,12 @@ app.get("/", (req, res) => {
   res.json({ message: "RallyIQ API is running veryy good" })
 })
 
-app.get("/games/:id", async (req, res) =>{
+app.get("/games/:id", authRequired, async (req, res) =>{
     const gameId = Number(req.params.id)
 
     const result = await pool.query(
-      "SELECT * FROM games WHERE id = $1",
-      [gameId]
+      "SELECT * FROM games WHERE id = $1 AND clerk_user_id = $2",
+      [gameId, req.auth.userId]
     )
 
     if (result.rows.length === 0) {
@@ -251,12 +370,12 @@ app.get("/games/:id", async (req, res) =>{
     res.json(mapGame(result.rows[0]))
 })
 
-app.delete("/games/:id", async (req, res) =>{
+app.delete("/games/:id", authRequired, async (req, res) =>{
     const gameId = Number(req.params.id)
 
     const result = await pool.query(
-      "DELETE FROM games WHERE id = $1 RETURNING *",
-      [gameId]
+      "DELETE FROM games WHERE id = $1 AND clerk_user_id = $2 RETURNING *",
+      [gameId, req.auth.userId]
     )
 
     if (result.rows.length === 0) {
@@ -267,13 +386,13 @@ app.delete("/games/:id", async (req, res) =>{
 }) 
 
 
-app.post("/games/:id/events", async (req, res) => {
+app.post("/games/:id/events", authRequired, async (req, res) => {
   const gameId = Number(req.params.id)
   const { player, type } = req.body
 
   const result = await pool.query(
-    "SELECT * FROM games WHERE id = $1",
-    [gameId]
+    "SELECT * FROM games WHERE id = $1 AND clerk_user_id = $2",
+    [gameId, req.auth.userId]
   )
 
   if (result.rows.length === 0) {
@@ -325,7 +444,7 @@ app.post("/games/:id/events", async (req, res) => {
          scoreb = $2,
          stats = $3,
          log = $4
-     WHERE id = $5
+     WHERE id = $5 AND clerk_user_id = $6
      RETURNING *`,
     [
       scoreA,
@@ -333,12 +452,13 @@ app.post("/games/:id/events", async (req, res) => {
       JSON.stringify(stats),
       JSON.stringify(log),
       gameId,
+      req.auth.userId,
     ]
   )
   res.json(mapGame(updated.rows[0]))
 })
 
-app.patch("/games/:id", async (req, res) => {
+app.patch("/games/:id", authRequired, async (req, res) => {
     const gameId = Number(req.params.id)
 
     const { scoreA, scoreB, stats, log, playerNames } = req.body
@@ -350,7 +470,7 @@ app.patch("/games/:id", async (req, res) => {
          stats = $3,
          log = $4,
          playernames = $5
-     WHERE id = $6
+     WHERE id = $6 AND clerk_user_id = $7
      RETURNING *`,
      [
       scoreA,
@@ -359,6 +479,7 @@ app.patch("/games/:id", async (req, res) => {
       JSON.stringify(log),
       JSON.stringify(playerNames || {}),
       gameId,
+      req.auth.userId,
     ]
     )
 

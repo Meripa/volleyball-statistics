@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useAuth } from "@clerk/clerk-react"
 import { Link } from "react-router-dom"
 
 import type {
@@ -44,6 +45,7 @@ const generatePlayers = (
 const TrainingMatch = ({
   game,
 }: Props) => {
+  const { getToken } = useAuth()
 
   const [selectedPlayer, setSelectedPlayer] =
     useState<number | null>(null)
@@ -77,6 +79,7 @@ const TrainingMatch = ({
     const [setStatsData, setSetStatsData] =
       useState<Record<number, any>>({
         1: {},
+        ...(game.stats?.setStatsData || {}),
       })
 
   const [selectedStatsView, setSelectedStatsView] =
@@ -273,45 +276,82 @@ const TrainingMatch = ({
       scoreA: 0,
       scoreB: 0,
     })
-    const handleConfirmSet = () => {
+
+  const saveMatchData = async (
+    nextStats: Stats,
+    showSuccess = true
+  ) => {
+    const token = await getToken()
+    const res = await fetch(
+      `${API_URL}/games/${game.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          scoreA: nextStats.scoreA,
+          scoreB: nextStats.scoreB,
+          stats: {
+            ...nextStats,
+            setStatsData,
+          },
+          log,
+          playerNames,
+        }),
+      }
+    )
+
+    if (!res.ok) {
+      alert("Save failed")
+      return false
+    }
+
+    if (showSuccess) {
+      alert("Match saved!")
+    }
+
+    return true
+  }
+
+    const handleConfirmSet = async () => {
 
   if (!pendingSetWinner) return
 
-  setStats((prev) => {
+  const newStats = {
+    ...stats,
+  }
 
-    const newStats = {
-      ...prev,
-    }
+  if (pendingSetWinner === "A") {
 
-    if (pendingSetWinner === "A") {
+    newStats.setsWonA =
+      (stats.setsWonA || 0) + 1
 
-      newStats.setsWonA =
-        (prev.setsWonA || 0) + 1
+  } else {
 
-    } else {
+    newStats.setsWonB =
+      (stats.setsWonB || 0) + 1
+  }
 
-      newStats.setsWonB =
-        (prev.setsWonB || 0) + 1
-    }
+  newStats.setHistory = [
+    ...(stats.setHistory || []),
 
-    newStats.setHistory = [
-      ...(prev.setHistory || []),
+    {
+      scoreA: stats.scoreA,
+      scoreB: stats.scoreB,
+    },
+  ]
 
-      {
-        scoreA: prev.scoreA,
-        scoreB: prev.scoreB,
-      },
-    ]
+  newStats.currentSet += 1
 
-    newStats.currentSet += 1
+  newStats.scoreA = 0
+  newStats.scoreB = 0
 
-    newStats.scoreA = 0
-    newStats.scoreB = 0
-
-    return newStats
-  })
+  setStats(newStats)
 
   setPendingSetWinner(null)
+  await saveMatchData(newStats, false)
 }
   const handleUndo = () => {
 
@@ -328,6 +368,35 @@ const TrainingMatch = ({
 
     const plussesMinusesKey =
       "plussesMinuses" + last.player
+
+    const currentSet = stats.currentSet
+
+    setSetStatsData((prev) => {
+      const currentSetStats =
+        prev[currentSet] || {}
+      const isError =
+        last.type.includes("Error")
+
+      return {
+        ...prev,
+        [currentSet]: {
+          ...currentSetStats,
+          [key]: Math.max(
+            (currentSetStats[key] || 0) - 1,
+            0
+          ),
+          [totalPointsKey]: isError
+            ? currentSetStats[totalPointsKey] || 0
+            : Math.max(
+                (currentSetStats[totalPointsKey] || 0) - 1,
+                0
+              ),
+          [plussesMinusesKey]:
+            (currentSetStats[plussesMinusesKey] || 0) +
+            (isError ? 1 : -1),
+        },
+      }
+    })
 
     setStats((prev) => {
 
@@ -443,29 +512,7 @@ const TrainingMatch = ({
         }
 
   const handleSaveMatch = async () => {
-    const res = await fetch(
-      `${API_URL}/games/${game.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          scoreA: stats.scoreA,
-          scoreB: stats.scoreB,
-          stats,
-          log,
-          playerNames,
-        }),
-      }
-    )
-
-    if (!res.ok) {
-      alert("Save failed")
-      return
-    }
-
-    alert("Match saved!")
+    await saveMatchData(stats)
   }
 
   return (

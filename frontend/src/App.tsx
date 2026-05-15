@@ -5,7 +5,6 @@ import {
   RouterProvider,
   Navigate
 } from 'react-router-dom'
-
 import {
   SignedIn,
   SignedOut

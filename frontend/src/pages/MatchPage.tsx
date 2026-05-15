@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useAuth } from "@clerk/clerk-react"
 import { useParams } from "react-router-dom"
 
 import BeachMatch from "./match/BeachMatch"
@@ -11,6 +12,7 @@ import type { Game } from "../types/match"
 const MatchPage = () => {
 
   const { id } = useParams()
+  const { getToken } = useAuth()
 
   const [game, setGame] =
     useState<Game | null>(null)
@@ -22,20 +24,42 @@ const MatchPage = () => {
 
     if (!id) return
 
-    fetch(`${API_URL}/games/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
+    let isMounted = true
 
-        setGame(data)
+    const loadMatch = async () => {
+      try {
+        const token = await getToken()
+        const res = await fetch(`${API_URL}/games/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-      })
-      .finally(() => {
+        if (!res.ok) {
+          throw new Error("Match not found")
+        }
 
-        setLoading(false)
+        const data = await res.json()
 
-      })
+        if (isMounted) {
+          setGame(data)
+        }
+      } catch (error) {
+        console.error(error)
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
 
-  }, [id])
+    loadMatch()
+
+    return () => {
+      isMounted = false
+    }
+
+  }, [id, getToken])
 
   if (loading) {
 

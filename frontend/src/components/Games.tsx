@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useAuth, useUser } from "@clerk/clerk-react"
 import NewMatchModel from "../components/NewMatchModel"
 import MatchCard from "../components/MatchCard"
 import type { Game } from "../types/match"
@@ -16,17 +17,29 @@ type NewGameData = {
 
 
 const Games = () => {
+    const { getToken } = useAuth()
+    const { user } = useUser()
     const [games, setGames] = useState<Game[]>([])
     const [showModel, setShowModel] = useState(false)
 
 
     const handleCreateGame = async (newGame: NewGameData) => {
+        const token = await getToken()
         const res = await fetch(`${API_URL}/games`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(newGame)
+            body: JSON.stringify({
+                ...newGame,
+                createdByName:
+                    user?.fullName ||
+                    user?.username ||
+                    user?.primaryEmailAddress?.emailAddress,
+                createdByEmail:
+                    user?.primaryEmailAddress?.emailAddress,
+            })
         })
         const createdGame = await res.json()
         console.log(createdGame)
@@ -35,8 +48,12 @@ const Games = () => {
     }
 
     const handleDeleteGame = async (id:number) => {
+        const token = await getToken()
         await fetch(`${API_URL}/games/${id}`, {
             method: "Delete",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
         })
         setGames((prev) => prev.filter((game) => game.id !== id))
 
@@ -45,14 +62,42 @@ const Games = () => {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetch(`${API_URL}/games`)
-            .then((res) => res.json())
-            .then((data) => setGames(data))
-            .catch((err) => console.error(err))
-            .finally(() => {
-              setLoading(false)
+        let isMounted = true
+
+        const loadGames = async () => {
+          try {
+            const token = await getToken()
+            const res = await fetch(`${API_URL}/games`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
-    }, [])
+
+            if (!res.ok) {
+              throw new Error("Failed to load matches")
+            }
+
+            const data = await res.json()
+
+            if (isMounted) {
+              setGames(data)
+            }
+          } catch (err) {
+            console.error(err)
+          } finally {
+            if (isMounted) {
+              setLoading(false)
+            }
+          }
+        }
+
+        loadGames()
+
+        return () => {
+          isMounted = false
+        }
+    }, [getToken])
+
     if (loading) {
   return (
     <div className="
