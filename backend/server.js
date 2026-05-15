@@ -467,19 +467,33 @@ app.get("/games/:id", authRequired, async (req, res) =>{
     const result = await pool.query(
       `SELECT *
        FROM games
-       WHERE id = $1
-         AND (
-           clerk_user_id = $2
-           OR visibility = 'public'
-         )`,
-      [gameId, req.auth.userId]
+       WHERE id = $1`,
+      [gameId]
     )
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Game not found" })
     }
 
-    res.json(mapGame(result.rows[0], req.auth.userId))
+    const game = result.rows[0]
+
+    if (
+      game.clerk_user_id !== req.auth.userId &&
+      game.visibility !== "public"
+    ) {
+      const adminResult = await pool.query(
+        `SELECT is_admin
+         FROM app_users
+         WHERE clerk_user_id = $1`,
+        [req.auth.userId]
+      )
+
+      if (!adminResult.rows[0]?.is_admin) {
+        return res.status(404).json({ message: "Game not found" })
+      }
+    }
+
+    res.json(mapGame(game, req.auth.userId))
 })
 
 app.delete("/games/:id", authRequired, async (req, res) =>{
