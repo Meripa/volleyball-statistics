@@ -2,6 +2,7 @@ import { Link } from "react-router-dom"
 
 import gamesImage from "../assets/images/games.png"
 import inputImage from "../assets/images/input1.png"
+import games2Image from "../assets/images/games2.png"
 
 const steps = [
   {
@@ -22,7 +23,7 @@ const steps = [
     number: "03",
     title: "Review and share",
     text: "Save the match, inspect each set, keep it private, or make it public so others can view it in read-only mode.",
-    image: gamesImage,
+    image: games2Image,
     alt: "RallyIQ public games view",
   },
 ]
