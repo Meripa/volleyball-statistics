@@ -46,6 +46,8 @@ const TrainingMatch = ({
   game,
 }: Props) => {
   const { getToken } = useAuth()
+  const canManage =
+    game.canManage !== false
 
   const [selectedPlayer, setSelectedPlayer] =
     useState<number | null>(null)
@@ -138,6 +140,8 @@ const TrainingMatch = ({
     player: number,
     type: string
   ) => {
+    if (!canManage) return
+
     if (navigator.vibrate) {
       navigator.vibrate(40)
     }
@@ -151,6 +155,20 @@ const TrainingMatch = ({
       player <= game.teamASize
     const isError =
       type.includes("Error")
+    const nextScoreA =
+      stats.scoreA +
+      (
+        isTeamAPlayer
+          ? (isError ? 0 : 1)
+          : (isError ? 1 : 0)
+      )
+    const nextScoreB =
+      stats.scoreB +
+      (
+        isTeamAPlayer
+          ? (isError ? 1 : 0)
+          : (isError ? 0 : 1)
+      )
 
     setSetStatsData((prev) => {
 
@@ -264,7 +282,13 @@ const TrainingMatch = ({
 
     setLog((prev) => [
       ...prev,
-      { player, type },
+      {
+        player,
+        type,
+        scoreA: nextScoreA,
+        scoreB: nextScoreB,
+        setNumber: stats.currentSet,
+      },
     ])
   }
 
@@ -317,6 +341,7 @@ const TrainingMatch = ({
 
     const handleConfirmSet = async () => {
 
+  if (!canManage) return
   if (!pendingSetWinner) return
 
   const newStats = {
@@ -354,6 +379,7 @@ const TrainingMatch = ({
   await saveMatchData(newStats, false)
 }
   const handleUndo = () => {
+    if (!canManage) return
 
     const last =
       log[log.length - 1]
@@ -512,6 +538,7 @@ const TrainingMatch = ({
         }
 
   const handleSaveMatch = async () => {
+    if (!canManage) return
     await saveMatchData(stats)
   }
 
@@ -561,195 +588,201 @@ const TrainingMatch = ({
           Back to Games
         </Link>
 
-        <button
-          onClick={handleSaveMatch}
-          className="
-            rounded-xl
-            bg-green-600
-            px-4
-            py-2
-            text-sm
-            font-bold
-            text-white
-            hover:bg-green-500
-          "
-        >
-          Save Match
-        </button>
+        {canManage && (
+          <>
+            <button
+              onClick={handleSaveMatch}
+              className="
+                rounded-xl
+                bg-green-600
+                px-4
+                py-2
+                text-sm
+                font-bold
+                text-white
+                hover:bg-green-500
+              "
+            >
+              Save Match
+            </button>
 
-        <button
-          onClick={() =>
-            setShowPlayerEditor(true)
-          }
+            <button
+              onClick={() =>
+                setShowPlayerEditor(true)
+              }
 
-          className="
-            rounded-xl
-            bg-slate-800
-            px-4
-            py-2
-            text-sm
-            font-bold
-            text-white
-            hover:bg-slate-700
-          "
-        >
-          Edit Players
-        </button>
+              className="
+                rounded-xl
+                bg-slate-800
+                px-4
+                py-2
+                text-sm
+                font-bold
+                text-white
+                hover:bg-slate-700
+              "
+            >
+              Edit Players
+            </button>
 
-        <button
-          onClick={() => {
+            <button
+              onClick={() => {
 
-            if (
-              stats.scoreA === 0 &&
-              stats.scoreB === 0
-            ) return
+                if (
+                  stats.scoreA === 0 &&
+                  stats.scoreB === 0
+                ) return
 
-            const winner =
-              stats.scoreA > stats.scoreB
-                ? "A"
-                : "B"
+                const winner =
+                  stats.scoreA > stats.scoreB
+                    ? "A"
+                    : "B"
 
-            setPendingSetWinner(winner)
+                setPendingSetWinner(winner)
 
-            setPendingSetScore({
-              scoreA: stats.scoreA,
-              scoreB: stats.scoreB,
-            })
-          }}
+                setPendingSetScore({
+                  scoreA: stats.scoreA,
+                  scoreB: stats.scoreB,
+                })
+              }}
 
-          className="
-            rounded-xl
-            bg-orange-600
-            px-4
-            py-2
-            text-sm
-            font-bold
-            text-white
-            hover:bg-orange-500
-          "
-        >
-          End Set
-        </button>
+              className="
+                rounded-xl
+                bg-orange-600
+                px-4
+                py-2
+                text-sm
+                font-bold
+                text-white
+                hover:bg-orange-500
+              "
+            >
+              End Set
+            </button>
+          </>
+        )}
       </div>
 
-        <div className="
-          grid
-          gap-6
-          lg:grid-cols-3
-        ">
-
-          {/* TEAM A */}
+        {canManage && (
           <div className="
-            rounded-2xl
-            bg-slate-900/80
-            p-4
+            grid
+            gap-6
+            lg:grid-cols-3
           ">
 
-            <h2 className="
-              mb-4
-              text-lg
-              font-bold
+            {/* TEAM A */}
+            <div className="
+              rounded-2xl
+              bg-slate-900/80
+              p-4
             ">
-              {game.teamA}
-            </h2>
 
-            <div className="space-y-2">
+              <h2 className="
+                mb-4
+                text-lg
+                font-bold
+              ">
+                {game.teamA}
+              </h2>
 
-              {teamAPlayers.map((player) => (
+              <div className="space-y-2">
 
-                <button
-                  key={player}
+                {teamAPlayers.map((player) => (
 
-                  onClick={() =>
-                    setSelectedPlayer(player)
-                  }
+                  <button
+                    key={player}
 
-                  className={`
-                    w-full
-                    rounded-xl
-                    px-4
-                    py-3
-                    text-left
-                    transition
-
-                    ${
-                      selectedPlayer === player
-                        ? "bg-cyan-600"
-                        : "bg-slate-800 hover:bg-slate-700"
+                    onClick={() =>
+                      setSelectedPlayer(player)
                     }
-                  `}
-                >
-                  {
-                    playerNames[player]
-                  }
-                </button>
 
-              ))}
+                    className={`
+                      w-full
+                      rounded-xl
+                      px-4
+                      py-3
+                      text-left
+                      transition
 
+                      ${
+                        selectedPlayer === player
+                          ? "bg-cyan-600"
+                          : "bg-slate-800 hover:bg-slate-700"
+                      }
+                    `}
+                  >
+                    {
+                      playerNames[player]
+                    }
+                  </button>
+
+                ))}
+
+              </div>
             </div>
-          </div>
         
 
-          {/* ACTIONS */}
-          <ActionPanel
-            selectedPlayer={selectedPlayer}
-            playerNames={playerNames}
-            handleClick={handleClick}
-            setSelectedPlayer={setSelectedPlayer}
-          />
+            {/* ACTIONS */}
+            <ActionPanel
+              selectedPlayer={selectedPlayer}
+              playerNames={playerNames}
+              handleClick={handleClick}
+              setSelectedPlayer={setSelectedPlayer}
+            />
 
-          {/* TEAM B */}
-          <div className="
-            rounded-2xl
-            bg-slate-900/80
-            p-4
-          ">
-
-            <h2 className="
-              mb-4
-              text-lg
-              font-bold
+            {/* TEAM B */}
+            <div className="
+              rounded-2xl
+              bg-slate-900/80
+              p-4
             ">
-              {game.teamB}
-            </h2>
 
-            <div className="space-y-2">
+              <h2 className="
+                mb-4
+                text-lg
+                font-bold
+              ">
+                {game.teamB}
+              </h2>
 
-              {teamBPlayers.map((player) => (
+              <div className="space-y-2">
 
-                <button
-                  key={player}
+                {teamBPlayers.map((player) => (
 
-                  onClick={() =>
-                    setSelectedPlayer(player)
-                  }
+                  <button
+                    key={player}
 
-                  className={`
-                    w-full
-                    rounded-xl
-                    px-4
-                    py-3
-                    text-left
-                    transition
-
-                    ${
-                      selectedPlayer === player
-                        ? "bg-cyan-600"
-                        : "bg-slate-800 hover:bg-slate-700"
+                    onClick={() =>
+                      setSelectedPlayer(player)
                     }
-                  `}
-                >
-                  {
-                    playerNames[player]
-                  }
-                </button>
 
-              ))}
+                    className={`
+                      w-full
+                      rounded-xl
+                      px-4
+                      py-3
+                      text-left
+                      transition
 
+                      ${
+                        selectedPlayer === player
+                          ? "bg-cyan-600"
+                          : "bg-slate-800 hover:bg-slate-700"
+                      }
+                    `}
+                  >
+                    {
+                      playerNames[player]
+                    }
+                  </button>
+
+                ))}
+
+              </div>
             </div>
-          </div>
 
-        </div>
+          </div>
+        )}
       <div className="space-y-4">
 
         <div className="flex flex-wrap gap-2">
@@ -827,11 +860,13 @@ const TrainingMatch = ({
         <RecentEvents
           log={log}
           playerNames={playerNames}
+          teamASize={game.teamASize}
           handleUndo={handleUndo}
+          canUndo={canManage}
         />
 
       </div>
-      {pendingSetWinner && (
+      {canManage && pendingSetWinner && (
 
             <div className="
               fixed
@@ -923,7 +958,7 @@ const TrainingMatch = ({
             </div>
           )}
       <PlayerEditorModal
-          open={showPlayerEditor}
+          open={canManage && showPlayerEditor}
           playerNames={playerNames}
           teamASize={game.teamASize}
           teamBSize={game.teamBSize}

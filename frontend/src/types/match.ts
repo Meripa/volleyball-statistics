@@ -56,6 +56,9 @@ export type Game = {
 export type LogItem = {
     player: number
     type: string
+    scoreA?: number
+    scoreB?: number
+    setNumber?: number
 }
 
 

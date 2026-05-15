@@ -39,6 +39,8 @@ type Props = {
 
 const BeachMatch = ({ game }: Props) => {
   const { getToken } = useAuth()
+  const canManage =
+    game.canManage !== false
 
   // States
   const [layoutMode, setLayoutMode] = useState<
@@ -139,6 +141,7 @@ const BeachMatch = ({ game }: Props) => {
 
   const handleConfirmSet = async () => {
 
+  if (!canManage) return
   if (!pendingSetWinner) return
 
   const newStats = { ...stats }
@@ -235,6 +238,8 @@ const BeachMatch = ({ game }: Props) => {
     player: number,
     type: string
   ) => {
+    if (!canManage) return
+
     if (navigator.vibrate) {
       navigator.vibrate(40)
     }
@@ -243,6 +248,22 @@ const BeachMatch = ({ game }: Props) => {
     const plussesMinusesKey =
       "plussesMinuses" + player
     const isError = type.includes("Error")
+    const isTeamAPlayer =
+      player <= game.teamASize
+    const nextScoreA =
+      stats.scoreA +
+      (
+        isTeamAPlayer
+          ? (isError ? 0 : 1)
+          : (isError ? 1 : 0)
+      )
+    const nextScoreB =
+      stats.scoreB +
+      (
+        isTeamAPlayer
+          ? (isError ? 1 : 0)
+          : (isError ? 0 : 1)
+      )
 
     setSetStatsData((prev) => {
       const currentSetStats =
@@ -274,9 +295,6 @@ const BeachMatch = ({ game }: Props) => {
         ...prev,
         [key]: (prev[key] || 0) + 1,
       }
-
-      const isTeamAPlayer =
-        player <= game.teamASize
 
       if (isTeamAPlayer) {
 
@@ -340,11 +358,18 @@ const BeachMatch = ({ game }: Props) => {
 
     setLog((prev) => [
       ...prev,
-      { player, type },
+      {
+        player,
+        type,
+        scoreA: nextScoreA,
+        scoreB: nextScoreB,
+        setNumber: stats.currentSet,
+      },
     ])
   }
   // Save
 const handleSaveMatch = async () => {
+  if (!canManage) return
   await saveMatchData(stats)
 }
   
@@ -446,6 +471,7 @@ const handleSaveMatch = async () => {
 
   // Undo
   const handleUndo = () => {
+    if (!canManage) return
 
     const last = log[log.length - 1]
 
@@ -596,26 +622,30 @@ const handleSaveMatch = async () => {
             Back to Games
           </Link>
 
-          <button
-            onClick={handleSaveMatch}
-            className="rounded-xl bg-green-600 px-4 py-2 text-sm font-bold hover:bg-green-500"
-          >
-            Save Match
-          </button>
-          <button
-            onClick={() => setShowPlayerEditor(true)}
-            className="
-              rounded-xl
-              bg-slate-700
-              px-4
-              py-2
-              text-sm
-              font-bold
-              hover:bg-slate-600
-            "
-          >
-            Edit Players
-          </button>
+          {canManage && (
+            <>
+              <button
+                onClick={handleSaveMatch}
+                className="rounded-xl bg-green-600 px-4 py-2 text-sm font-bold hover:bg-green-500"
+              >
+                Save Match
+              </button>
+              <button
+                onClick={() => setShowPlayerEditor(true)}
+                className="
+                  rounded-xl
+                  bg-slate-700
+                  px-4
+                  py-2
+                  text-sm
+                  font-bold
+                  hover:bg-slate-600
+                "
+              >
+                Edit Players
+              </button>
+            </>
+          )}
           <button
             onClick={handleDownloadPdf}
             className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold hover:bg-sky-500"
@@ -644,21 +674,25 @@ const handleSaveMatch = async () => {
 
           <div className="space-y-6">
 
-            <PlayerGrid
-              playerOrder={playerOrder}
-              playerNames={playerNames}
-              selectedPlayer={selectedPlayer}
-              stats={stats}
-              layoutMode={layoutMode}
-              setSelectedPlayer={setSelectedPlayer}
-            />
+            {canManage && (
+              <>
+                <PlayerGrid
+                  playerOrder={playerOrder}
+                  playerNames={playerNames}
+                  selectedPlayer={selectedPlayer}
+                  stats={stats}
+                  layoutMode={layoutMode}
+                  setSelectedPlayer={setSelectedPlayer}
+                />
 
-            <ActionPanel
-              selectedPlayer={selectedPlayer}
-              playerNames={playerNames}
-              handleClick={handleClick}
-              setSelectedPlayer={setSelectedPlayer}
-            />
+                <ActionPanel
+                  selectedPlayer={selectedPlayer}
+                  playerNames={playerNames}
+                  handleClick={handleClick}
+                  setSelectedPlayer={setSelectedPlayer}
+                />
+              </>
+            )}
 
             <div className="space-y-4">
 
@@ -726,10 +760,12 @@ const handleSaveMatch = async () => {
             <RecentEvents
               log={log}
               playerNames={playerNames}
+              teamASize={game.teamASize}
               handleUndo={handleUndo}
+              canUndo={canManage}
             />
           </div>
-          {pendingSetWinner && (
+          {canManage && pendingSetWinner && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
 
             <div className="w-full max-w-md rounded-2xl bg-slate-900 p-6 shadow-2xl">
@@ -767,7 +803,7 @@ const handleSaveMatch = async () => {
           </div>
         )}
         <PlayerEditorModal
-          open={showPlayerEditor}
+          open={canManage && showPlayerEditor}
           playerNames={playerNames}
           teamASize={game.teamASize}
           teamBSize={game.teamBSize}
