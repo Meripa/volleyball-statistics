@@ -41,6 +41,15 @@ const Navbar = () => {
               Home
             </Link>
 
+            <SignedIn>
+              <Link
+                to="/admin/games"
+                className={`font-medium transition-colors hover:text-white ${isActive('/admin/games') ? 'text-white' : 'text-slate-400'}`}
+              >
+                Admin
+              </Link>
+            </SignedIn>
+
             <SignedOut>
               <>
                 <Link to="/login"

@@ -82,10 +82,32 @@ const authRequired = async (req, res, next) => {
       userId: verified.sub,
     }
 
+    await pool.query(
+      `INSERT INTO app_users (clerk_user_id)
+       VALUES ($1)
+       ON CONFLICT (clerk_user_id) DO NOTHING`,
+      [req.auth.userId]
+    )
+
     next()
   } catch (error) {
     return res.status(401).json({ message: "Invalid token" })
   }
+}
+
+const adminRequired = async (req, res, next) => {
+  const result = await pool.query(
+    `SELECT is_admin
+     FROM app_users
+     WHERE clerk_user_id = $1`,
+    [req.auth.userId]
+  )
+
+  if (!result.rows[0]?.is_admin) {
+    return res.status(403).json({ message: "Admin access required" })
+  }
+
+  next()
 }
 
 const mapGame = (row) => ({
@@ -123,6 +145,15 @@ const initDb = async () => {
       id SERIAL PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `)
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS app_users (
+      id SERIAL PRIMARY KEY,
+      clerk_user_id TEXT UNIQUE NOT NULL,
+      is_admin BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     )
   `)
@@ -188,6 +219,14 @@ app.get("/games", authRequired, async (req,res) => {
     [req.auth.userId]
   )
     res.json(result.rows.map(mapGame))
+})
+
+app.get("/admin/games", authRequired, adminRequired, async (req,res) => {
+  const result = await pool.query(
+    "SELECT * FROM games ORDER BY id DESC"
+  )
+
+  res.json(result.rows.map(mapGame))
 })
 
 app.post("/games", authRequired, async (req,res) => {

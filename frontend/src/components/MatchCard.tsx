@@ -13,6 +13,7 @@ type Props = {
   matchType: string
   stats?: Stats
   playerNames?: Record<string, string>
+  canDelete?: boolean
   onDelete: (id: number) => void
 }
 
@@ -28,6 +29,7 @@ const MatchCard = ({
   date,
   createdByName,
   createdByEmail,
+  canDelete = true,
   onDelete,
 }: Props) => {
 
@@ -361,24 +363,26 @@ const MatchCard = ({
             Open
           </Link>
 
-          <button
-            onClick={handleDeleteClick}
+          {canDelete && (
+            <button
+              onClick={handleDeleteClick}
 
-            className="
-              rounded-2xl
-              border
-              border-red-500/20
-              px-5
-              py-3
-              text-sm
-              font-bold
-              text-red-400
-              transition
-              hover:bg-red-500/10
-            "
-          >
-            Delete
-          </button>
+              className="
+                rounded-2xl
+                border
+                border-red-500/20
+                px-5
+                py-3
+                text-sm
+                font-bold
+                text-red-400
+                transition
+                hover:bg-red-500/10
+              "
+            >
+              Delete
+            </button>
+          )}
 
         </div>
 

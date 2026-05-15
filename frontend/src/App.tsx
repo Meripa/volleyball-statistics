@@ -15,6 +15,7 @@ import MainLayout from './layouts/MainLayout'
 import HomePage from './pages/HomePage'
 import MatchPage from './pages/MatchPage'
 import GamesPage from './pages/GamesPage'
+import AdminGamesPage from './pages/AdminGamesPage'
 
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -83,6 +84,21 @@ const router = createBrowserRouter(
           <>
             <SignedIn>
               <MatchPage />
+            </SignedIn>
+
+            <SignedOut>
+              <Navigate to="/login" />
+            </SignedOut>
+          </>
+        }
+      />
+
+      <Route
+        path='admin/games'
+        element={
+          <>
+            <SignedIn>
+              <AdminGamesPage />
             </SignedIn>
 
             <SignedOut>
