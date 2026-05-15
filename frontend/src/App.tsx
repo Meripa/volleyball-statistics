@@ -50,17 +50,7 @@ const router = createBrowserRouter(
 
       <Route
         path='games'
-        element={
-          <>
-            <SignedIn>
-              <GamesPage />
-            </SignedIn>
-
-            <SignedOut>
-              <Navigate to="/login" />
-            </SignedOut>
-          </>
-        }
+        element={<GamesPage />}
       />
 
       <Route
@@ -80,17 +70,7 @@ const router = createBrowserRouter(
 
       <Route
         path='games/:id'
-        element={
-          <>
-            <SignedIn>
-              <MatchPage />
-            </SignedIn>
-
-            <SignedOut>
-              <Navigate to="/login" />
-            </SignedOut>
-          </>
-        }
+        element={<MatchPage />}
       />
 
       <Route

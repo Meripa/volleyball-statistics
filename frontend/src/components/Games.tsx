@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useAuth, useUser } from "@clerk/clerk-react"
+import { Link } from "react-router-dom"
 import NewMatchModel from "../components/NewMatchModel"
 import MatchCard from "../components/MatchCard"
 import type { Game } from "../types/match"
@@ -19,12 +20,14 @@ type NewGameData = {
 
 
 const Games = () => {
-    const { getToken } = useAuth()
+    const { getToken, isSignedIn } = useAuth()
     const { user } = useUser()
     const [games, setGames] = useState<Game[]>([])
     const [showModel, setShowModel] = useState(false)
     const [viewMode, setViewMode] =
-        useState<"my" | "public">("my")
+        useState<"my" | "public">(
+            isSignedIn ? "my" : "public"
+        )
 
     const clerkUserHeaders = () => {
         const displayName =
@@ -44,6 +47,7 @@ const Games = () => {
     }
 
     const handleCreateGame = async (newGame: NewGameData) => {
+        if (!isSignedIn) return
         const token = await getToken()
         const res = await fetch(`${API_URL}/games`, {
             method: "POST",
@@ -69,6 +73,7 @@ const Games = () => {
     }
 
     const handleDeleteGame = async (id:number) => {
+        if (!isSignedIn) return
         const token = await getToken()
         await fetch(`${API_URL}/games/${id}`, {
             method: "Delete",
@@ -85,6 +90,7 @@ const Games = () => {
         id: number,
         visibility: "private" | "public"
     ) => {
+        if (!isSignedIn) return
         const token = await getToken()
         const res = await fetch(
             `${API_URL}/games/${id}/visibility`,
@@ -131,15 +137,29 @@ const Games = () => {
 
         const loadGames = async () => {
           try {
-            const token = await getToken()
             const endpoint =
                 viewMode === "my"
                     ? "/games"
                     : "/public/games"
 
+            if (viewMode === "my" && !isSignedIn) {
+                if (isMounted) {
+                    setGames([])
+                    setLoading(false)
+                }
+                return
+            }
+
+            const token =
+                isSignedIn
+                    ? await getToken()
+                    : null
+
             const res = await fetch(`${API_URL}${endpoint}`, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    ...(token
+                        ? { Authorization: `Bearer ${token}` }
+                        : {}),
                     ...clerkUserHeaders(),
                 },
             })
@@ -167,7 +187,7 @@ const Games = () => {
         return () => {
           isMounted = false
         }
-    }, [getToken, user, viewMode])
+    }, [getToken, isSignedIn, user, viewMode])
 
     if (loading) {
   return (
@@ -221,14 +241,25 @@ const Games = () => {
             </p>
           </div>
 
-          <button onClick={() => setShowModel(true)} className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500 active:scale-95">
-            + New Match
-          </button>
+          {isSignedIn ? (
+            <button onClick={() => setShowModel(true)} className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500 active:scale-95">
+              + New Match
+            </button>
+          ) : (
+            <Link to="/login" className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500 active:scale-95">
+              Login to create match
+            </Link>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => setViewMode("my")}
+            onClick={() => {
+                if (isSignedIn) {
+                    setViewMode("my")
+                }
+            }}
+            disabled={!isSignedIn}
             className={`
               rounded-xl
               px-4
@@ -242,6 +273,8 @@ const Games = () => {
                   ? "bg-blue-600 text-white"
                   : "bg-slate-800 text-slate-300 hover:bg-slate-700"
               }
+
+              ${!isSignedIn ? "cursor-not-allowed opacity-50" : ""}
             `}
           >
             My Games

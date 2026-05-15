@@ -56,70 +56,92 @@ const getClerkSigningKey = async (issuer, kid) => {
   })
 }
 
-const authRequired = async (req, res, next) => {
+const attachAuthFromToken = async (req, token) => {
+  const decoded = jwt.decode(token, {
+    complete: true,
+  })
+
+  if (!decoded?.header?.kid || !decoded?.payload?.iss) {
+    throw new Error("Invalid token")
+  }
+
+  const issuer = decoded.payload.iss
+  const expectedIssuer = process.env.CLERK_ISSUER || issuer
+
+  const signingKey = await getClerkSigningKey(
+    expectedIssuer,
+    decoded.header.kid
+  )
+
+  const verified = jwt.verify(token, signingKey, {
+    algorithms: ["RS256"],
+    issuer: expectedIssuer,
+  })
+
+  req.auth = {
+    userId: verified.sub,
+  }
+
+  const displayName =
+    decodeHeaderValue(req.headers["x-user-name"]) ||
+    verified.name ||
+    null
+
+  const email =
+    decodeHeaderValue(req.headers["x-user-email"]) ||
+    verified.email ||
+    null
+
+  await pool.query(
+    `INSERT INTO app_users (
+      clerk_user_id,
+      display_name,
+      email
+    )
+     VALUES ($1, $2, $3)
+     ON CONFLICT (clerk_user_id)
+     DO UPDATE SET
+       display_name = COALESCE(EXCLUDED.display_name, app_users.display_name),
+       email = COALESCE(EXCLUDED.email, app_users.email)`,
+    [
+      req.auth.userId,
+      displayName,
+      email,
+    ]
+  )
+}
+
+const getBearerToken = (req) => {
   const authHeader = req.headers.authorization || ""
-  const token = authHeader.startsWith("Bearer ")
+  return authHeader.startsWith("Bearer ")
     ? authHeader.slice(7)
     : null
+}
 
+const optionalAuth = async (req, res, next) => {
+  const token = getBearerToken(req)
+
+  if (!token) {
+    req.auth = null
+    return next()
+  }
+
+  try {
+    await attachAuthFromToken(req, token)
+    next()
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid token" })
+  }
+}
+
+const authRequired = async (req, res, next) => {
+  const token = getBearerToken(req)
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" })
   }
 
   try {
-    const decoded = jwt.decode(token, {
-      complete: true,
-    })
-
-    if (!decoded?.header?.kid || !decoded?.payload?.iss) {
-      return res.status(401).json({ message: "Invalid token" })
-    }
-
-    const issuer = decoded.payload.iss
-    const expectedIssuer = process.env.CLERK_ISSUER || issuer
-
-    const signingKey = await getClerkSigningKey(
-      expectedIssuer,
-      decoded.header.kid
-    )
-
-    const verified = jwt.verify(token, signingKey, {
-      algorithms: ["RS256"],
-      issuer: expectedIssuer,
-    })
-
-    req.auth = {
-      userId: verified.sub,
-    }
-
-    const displayName =
-      decodeHeaderValue(req.headers["x-user-name"]) ||
-      verified.name ||
-      null
-
-    const email =
-      decodeHeaderValue(req.headers["x-user-email"]) ||
-      verified.email ||
-      null
-
-    await pool.query(
-      `INSERT INTO app_users (
-        clerk_user_id,
-        display_name,
-        email
-      )
-       VALUES ($1, $2, $3)
-       ON CONFLICT (clerk_user_id)
-       DO UPDATE SET
-         display_name = COALESCE(EXCLUDED.display_name, app_users.display_name),
-         email = COALESCE(EXCLUDED.email, app_users.email)`,
-      [
-        req.auth.userId,
-        displayName,
-        email,
-      ]
-    )
-
+    await attachAuthFromToken(req, token)
     next()
   } catch (error) {
     return res.status(401).json({ message: "Invalid token" })
@@ -277,7 +299,7 @@ app.get("/games", authRequired, async (req,res) => {
     res.json(result.rows.map((row) => mapGame(row, req.auth.userId)))
 })
 
-app.get("/public/games", authRequired, async (req,res) => {
+app.get("/public/games", optionalAuth, async (req,res) => {
   const result = await pool.query(
     `SELECT *
      FROM games
@@ -285,7 +307,7 @@ app.get("/public/games", authRequired, async (req,res) => {
      ORDER BY id DESC`
   )
 
-  res.json(result.rows.map((row) => mapGame(row, req.auth.userId)))
+  res.json(result.rows.map((row) => mapGame(row, req.auth?.userId)))
 })
 
 app.get("/admin/games", authRequired, adminRequired, async (req,res) => {
@@ -461,7 +483,7 @@ app.get("/", (req, res) => {
   res.json({ message: "RallyIQ API is running veryy good" })
 })
 
-app.get("/games/:id", authRequired, async (req, res) =>{
+app.get("/games/:id", optionalAuth, async (req, res) =>{
     const gameId = Number(req.params.id)
 
     const result = await pool.query(
@@ -478,9 +500,13 @@ app.get("/games/:id", authRequired, async (req, res) =>{
     const game = result.rows[0]
 
     if (
-      game.clerk_user_id !== req.auth.userId &&
+      game.clerk_user_id !== req.auth?.userId &&
       game.visibility !== "public"
     ) {
+      if (!req.auth?.userId) {
+        return res.status(404).json({ message: "Game not found" })
+      }
+
       const adminResult = await pool.query(
         `SELECT is_admin
          FROM app_users
@@ -493,7 +519,7 @@ app.get("/games/:id", authRequired, async (req, res) =>{
       }
     }
 
-    res.json(mapGame(game, req.auth.userId))
+    res.json(mapGame(game, req.auth?.userId))
 })
 
 app.delete("/games/:id", authRequired, async (req, res) =>{

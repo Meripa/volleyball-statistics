@@ -86,18 +86,18 @@ const RecentEvents = ({
               key={`${item.player}-${item.type}-${index}`}
               className="
                 grid
-                grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]
+                grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)]
                 items-center
-                gap-3
+                gap-2
                 border-b
                 border-slate-800
                 bg-slate-950/40
-                px-4
+                px-3
                 py-3
                 last:border-b-0
               "
             >
-              <div className="min-w-0">
+              <div className="flex min-w-0 justify-end">
                 {isTeamA && event}
               </div>
 
@@ -128,7 +128,7 @@ const RecentEvents = ({
                 </div>
               </div>
 
-              <div className="min-w-0 text-right">
+              <div className="flex min-w-0 justify-start text-right">
                 {!isTeamA && event}
               </div>
             </div>

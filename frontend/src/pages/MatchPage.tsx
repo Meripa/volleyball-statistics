@@ -12,7 +12,7 @@ import type { Game } from "../types/match"
 const MatchPage = () => {
 
   const { id } = useParams()
-  const { getToken } = useAuth()
+  const { getToken, isSignedIn } = useAuth()
 
   const [game, setGame] =
     useState<Game | null>(null)
@@ -28,10 +28,16 @@ const MatchPage = () => {
 
     const loadMatch = async () => {
       try {
-        const token = await getToken()
+        const token =
+          isSignedIn
+            ? await getToken()
+            : null
+
         const res = await fetch(`${API_URL}/games/${id}`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            ...(token
+              ? { Authorization: `Bearer ${token}` }
+              : {}),
           },
         })
 
@@ -59,7 +65,7 @@ const MatchPage = () => {
       isMounted = false
     }
 
-  }, [id, getToken])
+  }, [id, getToken, isSignedIn])
 
   if (loading) {
 
