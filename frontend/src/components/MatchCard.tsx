@@ -29,7 +29,6 @@ const MatchCard = ({
   teamB,
   scoreA,
   scoreB,
-  playerNames,
   matchType,
   stats,
   date,
@@ -45,47 +44,13 @@ const MatchCard = ({
   const handleDeleteClick = () => {
 
     const isConfirmed = window.confirm(
-      `Are you sure you want to delete ${teamAPlayers} vs ${teamBPlayers}?`
+      `Are you sure you want to delete ${teamA} vs ${teamB}?`
     )
 
     if (!isConfirmed) return
 
     onDelete(id)
   }
-  const hasPlayerNames =
-    matchType !== "training" &&
-    playerNames &&
-    Object.keys(playerNames).length > 0
-
-  const teamAPlayers =
-    hasPlayerNames
-      ? Object.keys(playerNames)
-          .filter(
-            (player) =>
-              Number(player) <=
-              Object.keys(playerNames).length / 2
-          )
-          .map(
-            (player) =>
-              playerNames[player]
-          )
-          .join(" / ")
-      : teamA
-
-  const teamBPlayers =
-    hasPlayerNames
-      ? Object.keys(playerNames)
-          .filter(
-            (player) =>
-              Number(player) >
-              Object.keys(playerNames).length / 2
-          )
-          .map(
-            (player) =>
-              playerNames[player]
-          )
-          .join(" / ")
-      : teamB
 
   const setsWonA = stats?.setsWonA || 0
   const setsWonB = stats?.setsWonB || 0
@@ -238,7 +203,7 @@ const MatchCard = ({
                 text-white
               "
             >
-              {teamAPlayers}
+              {teamA}
             </h2>
 
           </div>
@@ -358,7 +323,7 @@ const MatchCard = ({
                 text-white
               "
             >
-              {teamBPlayers}
+              {teamB}
             </h2>
 
           </div>

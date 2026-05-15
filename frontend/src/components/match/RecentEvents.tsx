@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react"
+
 import type { LogItem } from "../../types/match"
 import { statLabels } from "./constants"
 
@@ -16,6 +18,31 @@ const RecentEvents = ({
   handleUndo,
   canUndo = true,
 }: Props) => {
+  const [selectedSet, setSelectedSet] =
+    useState<"all" | number>("all")
+
+  const setNumbers = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          log
+            .map((item) => item.setNumber)
+            .filter(
+              (setNumber): setNumber is number =>
+                typeof setNumber === "number"
+            )
+        )
+      ).sort((a, b) => a - b),
+    [log]
+  )
+
+  const filteredLog =
+    selectedSet === "all"
+      ? log
+      : log.filter(
+          (item) => item.setNumber === selectedSet
+        )
+
   const getEventColor = (type: string) => {
     if (type.includes("Error")) {
       return "bg-red-600 text-white"
@@ -45,8 +72,51 @@ const RecentEvents = ({
         )}
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          onClick={() => setSelectedSet("all")}
+          className={`
+            rounded-xl
+            px-3
+            py-2
+            text-xs
+            font-bold
+
+            ${
+              selectedSet === "all"
+                ? "bg-cyan-600 text-white"
+                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+            }
+          `}
+        >
+          All
+        </button>
+
+        {setNumbers.map((setNumber) => (
+          <button
+            key={setNumber}
+            onClick={() => setSelectedSet(setNumber)}
+            className={`
+              rounded-xl
+              px-3
+              py-2
+              text-xs
+              font-bold
+
+              ${
+                selectedSet === setNumber
+                  ? "bg-cyan-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }
+            `}
+          >
+            Set {setNumber}
+          </button>
+        ))}
+      </div>
+
       <div className="mt-4 overflow-hidden rounded-xl border border-slate-800">
-        {log.slice().reverse().slice(0, 12).map((item, index) => {
+        {filteredLog.slice().reverse().slice(0, 12).map((item, index) => {
           const isTeamA =
             item.player <= teamASize
 
