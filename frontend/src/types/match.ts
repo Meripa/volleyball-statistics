@@ -40,6 +40,8 @@ export type Game = {
   date: string
   createdByName?: string | null
   createdByEmail?: string | null
+  visibility?: "private" | "public"
+  canManage?: boolean
 
   scoreA: number
   scoreB: number

@@ -4,7 +4,9 @@ import NewMatchModel from "../components/NewMatchModel"
 import MatchCard from "../components/MatchCard"
 import type { Game } from "../types/match"
 
-export const API_URL = "https://volleyball-statistics.onrender.com"
+export const API_URL =
+    import.meta.env.VITE_API_URL ||
+    "https://volleyball-statistics.onrender.com"
 
 type NewGameData = {
     teamA: string,
@@ -21,6 +23,8 @@ const Games = () => {
     const { user } = useUser()
     const [games, setGames] = useState<Game[]>([])
     const [showModel, setShowModel] = useState(false)
+    const [viewMode, setViewMode] =
+        useState<"my" | "public">("my")
 
     const clerkUserHeaders = () => {
         const displayName =
@@ -77,6 +81,49 @@ const Games = () => {
 
     }
 
+    const handleVisibilityChange = async (
+        id: number,
+        visibility: "private" | "public"
+    ) => {
+        const token = await getToken()
+        const res = await fetch(
+            `${API_URL}/games/${id}/visibility`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                    ...clerkUserHeaders(),
+                },
+                body: JSON.stringify({
+                    visibility,
+                }),
+            }
+        )
+
+        if (!res.ok) {
+            alert("Visibility update failed")
+            return
+        }
+
+        const updatedGame = await res.json()
+
+        setGames((prev) => {
+            if (
+                viewMode === "public" &&
+                updatedGame.visibility !== "public"
+            ) {
+                return prev.filter((game) => game.id !== id)
+            }
+
+            return prev.map((game) =>
+                game.id === id
+                    ? updatedGame
+                    : game
+            )
+        })
+    }
+
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -85,7 +132,12 @@ const Games = () => {
         const loadGames = async () => {
           try {
             const token = await getToken()
-            const res = await fetch(`${API_URL}/games`, {
+            const endpoint =
+                viewMode === "my"
+                    ? "/games"
+                    : "/public/games"
+
+            const res = await fetch(`${API_URL}${endpoint}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     ...clerkUserHeaders(),
@@ -115,7 +167,7 @@ const Games = () => {
         return () => {
           isMounted = false
         }
-    }, [getToken, user])
+    }, [getToken, user, viewMode])
 
     if (loading) {
   return (
@@ -165,12 +217,54 @@ const Games = () => {
               Games
             </h1>
             <p className="mt-2 max-w-2xl text-slate-400">
-              View saved matches, continue stat tracking, or start a new game.
+              View your saved matches or browse public matches.
             </p>
           </div>
 
           <button onClick={() => setShowModel(true)} className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500 active:scale-95">
             + New Match
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setViewMode("my")}
+            className={`
+              rounded-xl
+              px-4
+              py-2
+              text-sm
+              font-bold
+              transition
+
+              ${
+                viewMode === "my"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }
+            `}
+          >
+            My Games
+          </button>
+
+          <button
+            onClick={() => setViewMode("public")}
+            className={`
+              rounded-xl
+              px-4
+              py-2
+              text-sm
+              font-bold
+              transition
+
+              ${
+                viewMode === "public"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }
+            `}
+          >
+            Public Games
           </button>
         </div>
 
@@ -183,12 +277,25 @@ const Games = () => {
             />
           )}
 
+          {games.length === 0 && (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-slate-400">
+              {viewMode === "my"
+                ? "No matches yet."
+                : "No public matches yet."}
+            </div>
+          )}
+
           {games.map((game) => (
             <MatchCard
               key={game.id}
               {...game}
               matchType={game.matchType}
               onDelete={handleDeleteGame}
+              onVisibilityChange={
+                game.canManage
+                  ? handleVisibilityChange
+                  : undefined
+              }
             />
           ))}
 

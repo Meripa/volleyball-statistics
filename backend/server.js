@@ -141,7 +141,7 @@ const adminRequired = async (req, res, next) => {
   next()
 }
 
-const mapGame = (row) => ({
+const mapGame = (row, viewerUserId = null) => ({
   id: row.id,
   matchType: row.matchtype,
   teamASize: row.teamasize,
@@ -151,6 +151,11 @@ const mapGame = (row) => ({
   date: row.date,
   createdByName: row.createdbyname,
   createdByEmail: row.createdbyemail,
+  visibility: row.visibility || "private",
+  canManage:
+    viewerUserId
+      ? row.clerk_user_id === viewerUserId
+      : false,
   scoreA: row.scorea,
   scoreB: row.scoreb,
 
@@ -237,6 +242,11 @@ const initDb = async () => {
 
   await pool.query(`
     ALTER TABLE games
+    ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'private'
+  `)
+
+  await pool.query(`
+    ALTER TABLE games
     ADD COLUMN IF NOT EXISTS playernames JSONB NOT NULL DEFAULT '{}'::jsonb
   `)
   await pool.query(`
@@ -258,10 +268,24 @@ const initDb = async () => {
 
 app.get("/games", authRequired, async (req,res) => {
   const result = await pool.query(
-    "SELECT * FROM games WHERE clerk_user_id = $1 ORDER BY id DESC",
+    `SELECT *
+     FROM games
+     WHERE clerk_user_id = $1
+     ORDER BY id DESC`,
     [req.auth.userId]
   )
-    res.json(result.rows.map(mapGame))
+    res.json(result.rows.map((row) => mapGame(row, req.auth.userId)))
+})
+
+app.get("/public/games", authRequired, async (req,res) => {
+  const result = await pool.query(
+    `SELECT *
+     FROM games
+     WHERE visibility = 'public'
+     ORDER BY id DESC`
+  )
+
+  res.json(result.rows.map((row) => mapGame(row, req.auth.userId)))
 })
 
 app.get("/admin/games", authRequired, adminRequired, async (req,res) => {
@@ -269,7 +293,7 @@ app.get("/admin/games", authRequired, adminRequired, async (req,res) => {
     "SELECT * FROM games ORDER BY id DESC"
   )
 
-  res.json(result.rows.map(mapGame))
+  res.json(result.rows.map((row) => mapGame(row, req.auth.userId)))
 })
 
 app.post("/games", authRequired, async (req,res) => {
@@ -311,7 +335,7 @@ app.post("/games", authRequired, async (req,res) => {
       ]
     )
 
-    res.status(201).json(mapGame(result.rows[0]))
+    res.status(201).json(mapGame(result.rows[0], req.auth.userId))
 })
 
 app.post("/register", async (req, res) => {
@@ -441,7 +465,13 @@ app.get("/games/:id", authRequired, async (req, res) =>{
     const gameId = Number(req.params.id)
 
     const result = await pool.query(
-      "SELECT * FROM games WHERE id = $1 AND clerk_user_id = $2",
+      `SELECT *
+       FROM games
+       WHERE id = $1
+         AND (
+           clerk_user_id = $2
+           OR visibility = 'public'
+         )`,
       [gameId, req.auth.userId]
     )
 
@@ -449,7 +479,7 @@ app.get("/games/:id", authRequired, async (req, res) =>{
       return res.status(404).json({ message: "Game not found" })
     }
 
-    res.json(mapGame(result.rows[0]))
+    res.json(mapGame(result.rows[0], req.auth.userId))
 })
 
 app.delete("/games/:id", authRequired, async (req, res) =>{
@@ -466,6 +496,29 @@ app.delete("/games/:id", authRequired, async (req, res) =>{
 
     res.json({ message: "Game deleted!"})
 }) 
+
+app.patch("/games/:id/visibility", authRequired, async (req, res) => {
+  const gameId = Number(req.params.id)
+  const { visibility } = req.body
+
+  if (!["private", "public"].includes(visibility)) {
+    return res.status(400).json({ message: "Invalid visibility" })
+  }
+
+  const result = await pool.query(
+    `UPDATE games
+     SET visibility = $1
+     WHERE id = $2 AND clerk_user_id = $3
+     RETURNING *`,
+    [visibility, gameId, req.auth.userId]
+  )
+
+  if (result.rows.length === 0) {
+    return res.status(404).json({ message: "Game not found" })
+  }
+
+  res.json(mapGame(result.rows[0], req.auth.userId))
+})
 
 
 app.post("/games/:id/events", authRequired, async (req, res) => {
@@ -537,7 +590,7 @@ app.post("/games/:id/events", authRequired, async (req, res) => {
       req.auth.userId,
     ]
   )
-  res.json(mapGame(updated.rows[0]))
+  res.json(mapGame(updated.rows[0], req.auth.userId))
 })
 
 app.patch("/games/:id", authRequired, async (req, res) => {
@@ -571,7 +624,7 @@ app.patch("/games/:id", authRequired, async (req, res) => {
 
 
 
-    res.json(mapGame(result.rows[0]))
+    res.json(mapGame(result.rows[0], req.auth.userId))
 })
 
 app.get("/test-db", async (req, res) => {

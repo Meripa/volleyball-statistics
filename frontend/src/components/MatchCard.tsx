@@ -10,11 +10,17 @@ type Props = {
   date: string
   createdByName?: string | null
   createdByEmail?: string | null
+  visibility?: "private" | "public"
+  canManage?: boolean
   matchType: string
   stats?: Stats
   playerNames?: Record<string, string>
   canDelete?: boolean
   onDelete: (id: number) => void
+  onVisibilityChange?: (
+    id: number,
+    visibility: "private" | "public"
+  ) => void
 }
 
 const MatchCard = ({
@@ -29,8 +35,11 @@ const MatchCard = ({
   date,
   createdByName,
   createdByEmail,
+  visibility = "private",
+  canManage = true,
   canDelete = true,
   onDelete,
+  onVisibilityChange,
 }: Props) => {
 
   const handleDeleteClick = () => {
@@ -163,6 +172,27 @@ const MatchCard = ({
           >
             Created by {creator}
           </p>
+
+          <span
+            className={`
+              w-fit
+              rounded-full
+              px-3
+              py-1
+              text-xs
+              font-bold
+
+              ${
+                visibility === "public"
+                  ? "bg-emerald-500/10 text-emerald-300"
+                  : "bg-slate-800 text-slate-300"
+              }
+            `}
+          >
+            {visibility === "public"
+              ? "Public"
+              : "Only me"}
+          </span>
 
         </div>
 
@@ -363,7 +393,40 @@ const MatchCard = ({
             Open
           </Link>
 
-          {canDelete && (
+          {canManage && onVisibilityChange && (
+            <select
+              value={visibility}
+              onChange={(event) =>
+                onVisibilityChange(
+                  id,
+                  event.target.value as "private" | "public"
+                )
+              }
+              className="
+                rounded-2xl
+                border
+                border-slate-700
+                bg-slate-950
+                px-4
+                py-3
+                text-sm
+                font-bold
+                text-white
+                outline-none
+                transition
+                hover:border-cyan-500
+              "
+            >
+              <option value="private">
+                Only me
+              </option>
+              <option value="public">
+                Public
+              </option>
+            </select>
+          )}
+
+          {canDelete && canManage && (
             <button
               onClick={handleDeleteClick}
 
