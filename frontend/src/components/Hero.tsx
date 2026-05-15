@@ -103,6 +103,26 @@ const Hero = () => {
               >
                 Create Account
               </Link>
+
+              <Link
+                to="/demo"
+                className="
+                  rounded-xl
+                  border
+                  border-cyan-400/60
+                  bg-cyan-400/10
+                  px-6
+                  py-3
+                  text-sm
+                  font-black
+                  text-cyan-100
+                  transition
+                  hover:border-cyan-300
+                  hover:bg-cyan-400/20
+                "
+              >
+                Try Demo
+              </Link>
             </div>
           </div>
 

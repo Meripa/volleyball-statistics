@@ -34,10 +34,11 @@ const generatePlayers = (
 
 type Props = {
   game: Game
+  isDemo?: boolean
 }
 
 
-const BeachMatch = ({ game }: Props) => {
+const BeachMatch = ({ game, isDemo = false }: Props) => {
   const { getToken } = useAuth()
   const canManage =
     game.canManage !== false
@@ -100,6 +101,14 @@ const BeachMatch = ({ game }: Props) => {
   ) => {
 
     if (!game?.id) return false
+    if (isDemo) {
+      if (showSuccess) {
+        alert("Demo match is not saved.")
+      }
+
+      return true
+    }
+
     const token = await getToken()
 
     const res = await fetch(

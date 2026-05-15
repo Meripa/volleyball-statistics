@@ -16,6 +16,7 @@ import HomePage from './pages/HomePage'
 import MatchPage from './pages/MatchPage'
 import GamesPage from './pages/GamesPage'
 import AdminGamesPage from './pages/AdminGamesPage'
+import DemoPage from './pages/DemoPage'
 
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -31,6 +32,7 @@ const router = createBrowserRouter(
 
       <Route path='login' element={<LoginPage />} />
       <Route path='register' element={<RegisterPage />} />
+      <Route path='demo' element={<DemoPage />} />
 
       {/* PROTECTED ROUTES */}
       <Route
