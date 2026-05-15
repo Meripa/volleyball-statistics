@@ -116,7 +116,7 @@ const RecentEvents = ({
       </div>
 
       <div className="mt-4 overflow-hidden rounded-xl border border-slate-800">
-        {filteredLog.slice().reverse().slice(0, 12).map((item, index) => {
+        {filteredLog.slice().reverse().map((item, index) => {
           const isTeamA =
             item.player <= teamASize
 
