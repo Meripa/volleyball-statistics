@@ -1,83 +1,123 @@
-# RallyIQ – Volleyball Statistics App
+RallyIQ – Volleyball Statistics Platform
 
-**Full-stack web application** for tracking volleyball matches and player statistics.
 
-Live Link: https://volleyball-statistics.vercel.app/
 
-![RallyIQ Preview](./assets/screenshot1.png)
 
-## ✨ Features
 
-- 🏐 Create and manage matches
-- 📊 Track detailed player statistics:
-  - Points
-  - Errors
-  - Serves
-  - Blocks
-- ⚡ Real-time stat updates during matches
-- 🧠 Structured event logging system
-- 📁 Persistent data storage (PostgreSQL)
-- 📜 Match history tracking
 
-![RallyIQ Preview](./assets/screenshot2.png) <!-- Lisa siia ekraanipilt hiljem -->
 
-## 🌍 Deployment
+Real-time volleyball statistics platform built with React, TypeScript, Node.js and PostgreSQL.
 
-- **Frontend:** Deployed on Vercel
-- **Backend API:** Hosted on Render
-- **Database:** PostgreSQL (cloud)
+RallyIQ is a full-stack web application designed for volleyball coaches and players to track match statistics quickly and efficiently during games. The platform focuses on fast in-game workflows, responsive UI, and detailed performance analytics.
 
-The frontend communicates with the backend via REST API.
+🌐 Live Demo: https://volleyball-statistics.vercel.app/
+💻 GitHub Repository: https://github.com/Meripa/volleyball-statistics
 
-## 🛠 Tech Stack
+✨ Features
+🏐 Real-time match tracking
+📊 Detailed player and team statistics
+👤 Authentication and private match storage
+📜 Match history and saved games
+📱 Mobile-friendly responsive design
+⚡ Fast event-based stat input workflow
+🔄 Undo event system
+📈 Set tracking and live score updates
+📤 PDF export support
+🔗 Shareable match reports
+🧩 Reusable React component architecture
+🖼 Screenshots
 
-**Frontend:**
-- React
-- TypeScript
-- Tailwind CSS
+## 🎥 Demo
 
-**Backend:**
-- Node.js
-- Express
-- PostgreSQL
+### 🏁 Create Match
+/assets/gifs/CreateGame.gif
 
-## 🧠 Key Concepts & Implementation
+### ⚡ Real-Time Match Tracking
+/assets/gifs/Statistic.gif
 
-- State-driven stat tracking system  
-- Dynamic player-based data mapping  
-- REST API for match and stats management  
-- Separation of frontend and backend logic  
-- Scalable structure for future AI integration  
+### 📱 Mobile Interface
+(gif)
 
-## ▶️ Run locally
 
-### Backend
+🛠 Tech Stack
+Frontend
+React
+TypeScript
+Vite
+Tailwind CSS
+Axios
+React Router DOM
+Backend
+Node.js
+Express
+PostgreSQL
+REST API
+JWT Authentication
+Deployment
+Frontend: Vercel
+Backend: Render
+Database: PostgreSQL Cloud Hosting
+🚀 Key Highlights
+Full-stack application architecture
+Type-safe frontend and backend development with TypeScript
+Real-time state management for live stat tracking
+REST API integration
+Authentication system with user-specific match storage
+Mobile-first UI optimized for live games
+Event logging and undo system
+Scalable structure for future AI/video analytics integration
+📂 Project Structure
+frontend/
+  src/
+    components/
+    pages/
+    layouts/
+    hooks/
 
-```
-cd backend
-npm install
-npm run dev
-```
-
-### Frontend
-
-```
+backend/
+  src/
+    routes/
+    controllers/
+    db/
+⚙️ Local Development
+Clone Repository
+git clone https://github.com/Meripa/volleyball-statistics.git
+cd volleyball-statistics
+Frontend
 cd frontend
 npm install
 npm run dev
-```
-## 🔮 Future Improvements
 
-- 🎥 Video upload & automatic event detection (AI)  
-- 📊 Advanced analytics (efficiency %, trends)  
-- 👥 User authentication & multi-user support  
-- ☁️ Cloud storage for matches and videos  
-- 📤 Export stats (PDF / CSV)  
+Runs on:
 
----
-## 👨‍💻 Author
+http://localhost:5173
+Backend
+cd backend
+npm install
+npm run dev
 
-Built by Meris Pärna
+Runs on:
 
----
-Built as a fullstack learning project.
+http://localhost:3000
+📌 Future Plans
+🎥 AI-assisted video analysis
+📊 Advanced analytics dashboard
+📈 Player performance trends
+🧠 Match insights powered by AI
+☁️ Improved cloud infrastructure
+🧪 Automated testing with Vitest & React Testing Library
+🎯 Purpose
+
+RallyIQ was built to simplify volleyball statistics tracking and reduce manual work for coaches and players.
+
+The long-term vision is to combine live statistics, analytics, and AI-assisted video analysis into a single modern volleyball platform.
+
+👨‍💻 Author
+
+Meris Pärna
+
+GitHub: https://github.com/Meripa
+LinkedIn: https://www.linkedin.com/in/meris-p%C3%A4rna-381465345/
+
+Project is actively under development.
+Feedback and contributions are welcome!

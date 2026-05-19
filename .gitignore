@@ -16,6 +16,14 @@ dist-ssr
 .DS_Store
 build
 
+# AI service generated files
+ai-service/venv/
+ai-service/uploads/
+ai-service/frames/
+ai-service/processed/
+ai-service/__pycache__/
+*.pyc
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
