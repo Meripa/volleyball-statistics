@@ -75,7 +75,6 @@ RallyIQ is a full-stack web application that allows volleyball coaches and playe
 
 ## 📂 Project Structure
 
-```bash
 volleyball-statistics/
 ├── frontend/          # React + Vite
 │   ├── src/
